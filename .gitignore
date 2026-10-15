@@ -1,0 +1,11 @@
+# secrets
+.env
+
+# build output
+/first-app
+*.exe
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
