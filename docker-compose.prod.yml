@@ -1,6 +1,7 @@
 services:
   app:
-    build: .
+    image: ghcr.io/mohsenottello/learn-golang:latest
+    container_name: app
     environment:
       DATABASE_URL: postgres://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}?sslmode=disable
       BASE_URL: ${BASE_URL}
@@ -12,6 +13,12 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    restart: unless-stopped
+  watchtower:
+    image: containrrr/watchtower
+    command: --interval 120 --cleanup app
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     restart: unless-stopped
 
   db:
