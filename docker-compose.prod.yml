@@ -17,6 +17,8 @@ services:
   watchtower:
     image: containrrr/watchtower
     command: --interval 120 --cleanup app
+    environment:
+      DOCKER_API_VERSION: "1.44"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     restart: unless-stopped
