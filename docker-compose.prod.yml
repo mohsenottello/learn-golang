@@ -15,7 +15,7 @@ services:
         condition: service_healthy
     restart: unless-stopped
   watchtower:
-    image: containrrr/watchtower
+    image: nickfedor/watchtower:latest
     command: --interval 120 --cleanup app
     environment:
       DOCKER_API_VERSION: "1.44"
