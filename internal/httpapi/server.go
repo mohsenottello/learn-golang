@@ -35,6 +35,8 @@ func NewRouter(d Deps) http.Handler {
 	mux.HandleFunc("POST /api/auth/forgot-password", h.forgotPassword)
 	mux.HandleFunc("POST /api/auth/reset-password", h.resetPassword)
 	mux.Handle("GET /api/auth/me", user(h.userMe))
+	mux.Handle("PUT /api/auth/me", user(h.updateName))
+	mux.Handle("PUT /api/auth/password", user(h.changePassword))
 
 	// Users: own resume
 	mux.Handle("GET /api/me/resume", user(h.getMyResume))

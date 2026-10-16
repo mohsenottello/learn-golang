@@ -4,14 +4,16 @@ import { Bullet, Education, Experience, FullResume, Lang, Language, Resume, Soft
 import { useAuth } from "../auth";
 import { ErrorPanel, TextField } from "../ui";
 import SectionEditor from "../components/SectionEditor";
+import AccountSettings from "./AccountSettings";
 
-type Section = "profile" | "software" | "languages" | "education" | "experience";
+type Section = "profile" | "software" | "languages" | "education" | "experience" | "account";
 const SECTIONS: { key: Section; label: string; icon: string }[] = [
   { key: "profile", label: "Profile", icon: "person" },
   { key: "software", label: "Software", icon: "build" },
   { key: "languages", label: "Languages", icon: "translate" },
   { key: "education", label: "Education", icon: "school" },
   { key: "experience", label: "Experience", icon: "work" },
+  { key: "account", label: "Account", icon: "settings" },
 ];
 
 export default function Account() {
@@ -26,6 +28,7 @@ export default function Account() {
 
   if (!data) return <p>Loading…</p>;
   const reload = async () => setData(await api.mine());
+  if (selectedExp === null && data.experience.length > 0) setSelectedExp(data.experience[0].id);
   const r = data.resume;
 
   return (
@@ -48,6 +51,7 @@ export default function Account() {
 
       <section className="editor-main">
         {section === "profile" && <ProfileEditor data={data} onChange={setData} />}
+        {section === "account" && <AccountSettings onNameChange={(name) => setData({ ...data, name })} />}
 
         {section === "software" && (
           <SectionEditor<Software>
@@ -104,7 +108,7 @@ export default function Account() {
                 { key: "date_from", label: "From", type: "month", half: true },
                 { key: "date_to", label: "To (empty = present)", type: "month", half: true },
               ]}
-              summary={(x) => `${x.company} — ${x.role}`}
+              summary={(x) => `${x.company} — ${x.role}  ·  ${x.bullets.length} responsibilit${x.bullets.length === 1 ? "y" : "ies"}`}
               onCreate={async (d) => { await api.createItem("experience", d); await reload(); }}
               onUpdate={async (x) => { await api.updateItem("experience", x); await reload(); }}
               onDelete={async (id) => { await api.deleteItem("experience", id); if (selectedExp === id) setSelectedExp(null); await reload(); }}
@@ -129,8 +133,8 @@ export default function Account() {
                 </div>
               );
             })()}
-            {selectedExp === null && data.experience.length > 0 && (
-              <p className="grey-text">Click an experience to edit its responsibilities.</p>
+            {data.experience.length > 1 && (
+              <p className="grey-text" style={{ fontSize: ".85rem" }}>Click another experience to edit its responsibilities.</p>
             )}
           </>
         )}

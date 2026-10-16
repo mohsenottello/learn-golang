@@ -64,3 +64,10 @@ func (s *Store) DeleteAllUserSessions(ctx context.Context, userID int64) error {
 	_, err := s.db.ExecContext(ctx, `DELETE FROM user_sessions WHERE user_id = $1`, userID)
 	return err
 }
+
+// DeleteOtherUserSessions logs the user out everywhere except the given session.
+func (s *Store) DeleteOtherUserSessions(ctx context.Context, userID int64, keepToken string) error {
+	_, err := s.db.ExecContext(ctx,
+		`DELETE FROM user_sessions WHERE user_id = $1 AND token <> $2`, userID, keepToken)
+	return err
+}

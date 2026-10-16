@@ -31,6 +31,9 @@ export const auth = {
   login: (email: string, password: string) => post<User>("/api/auth/login", { email, password }),
   logout: () => post<void>("/api/auth/logout", {}),
   me: () => get<User>("/api/auth/me"),
+  updateName: (name: string) => request<User>("/api/auth/me", "PUT", { name }),
+  changePassword: (current_password: string, new_password: string) =>
+    request<Msg>("/api/auth/password", "PUT", { current_password, new_password }),
   forgotPassword: (email: string) => post<Msg>("/api/auth/forgot-password", { email }),
   resetPassword: (token: string, password: string) => post<Msg>("/api/auth/reset-password", { token, password }),
 };

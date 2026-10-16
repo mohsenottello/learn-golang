@@ -110,3 +110,10 @@ func (s *Store) DeleteUser(ctx context.Context, id int64) error {
 	}
 	return nil
 }
+
+// --- account settings ---
+
+func (s *Store) UpdateUserName(ctx context.Context, userID int64, name string) (*User, error) {
+	return scanUser(s.db.QueryRowContext(ctx,
+		`UPDATE users SET name = $2 WHERE id = $1 RETURNING `+userCols, userID, name))
+}
