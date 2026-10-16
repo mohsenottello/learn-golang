@@ -21,6 +21,3 @@ migration:    ## make migration name=add_something
 	 printf -- "-- +goose Up\n\n\n-- +goose Down\n\n" > $$f; echo "created $$f"
 
 .PHONY: dev web up down test migration
-
-deploy:        ## on the server
-	git pull && docker compose -f docker-compose.prod.yml up --build -d

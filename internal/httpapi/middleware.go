@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"runtime/debug"
+	"strings"
 	"time"
 
 	"github.com/mohsenottello/golang/internal/store"
@@ -12,13 +13,36 @@ import (
 
 type ctxKey int
 
-const adminKey ctxKey = iota
+const (
+	adminKey ctxKey = iota
+	userKey
+)
 
-// requireAdmin rejects requests without a valid session and puts the admin
-// into the request context for the wrapped handler.
+const (
+	adminCookie = "admin_session"
+	userCookie  = "user_session"
+	sessionTTL  = 7 * 24 * time.Hour
+)
+
+func (h *handlers) setSessionCookie(w http.ResponseWriter, name, token string, expires time.Time) {
+	http.SetCookie(w, &http.Cookie{
+		Name:     name,
+		Value:    token,
+		Path:     "/",
+		Expires:  expires,
+		HttpOnly: true,
+		SameSite: http.SameSiteLaxMode,
+		Secure:   strings.HasPrefix(h.BaseURL, "https://"),
+	})
+}
+
+func clearCookie(w http.ResponseWriter, name string) {
+	http.SetCookie(w, &http.Cookie{Name: name, Value: "", Path: "/", MaxAge: -1})
+}
+
 func (h *handlers) requireAdmin(next http.HandlerFunc) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		c, err := r.Cookie("session")
+		c, err := r.Cookie(adminCookie)
 		if err != nil {
 			writeError(w, http.StatusUnauthorized, "not logged in")
 			return
@@ -32,9 +56,24 @@ func (h *handlers) requireAdmin(next http.HandlerFunc) http.Handler {
 	})
 }
 
-func currentAdmin(r *http.Request) *store.Admin {
-	return r.Context().Value(adminKey).(*store.Admin)
+func (h *handlers) requireUser(next http.HandlerFunc) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		c, err := r.Cookie(userCookie)
+		if err != nil {
+			writeError(w, http.StatusUnauthorized, "not logged in")
+			return
+		}
+		user, err := h.Store.UserForSession(r.Context(), c.Value)
+		if err != nil {
+			writeError(w, http.StatusUnauthorized, "not logged in")
+			return
+		}
+		next(w, r.WithContext(context.WithValue(r.Context(), userKey, user)))
+	})
 }
+
+func currentAdmin(r *http.Request) *store.Admin { return r.Context().Value(adminKey).(*store.Admin) }
+func currentUser(r *http.Request) *store.User   { return r.Context().Value(userKey).(*store.User) }
 
 func logRequests(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

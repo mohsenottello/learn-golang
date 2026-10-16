@@ -11,41 +11,43 @@ import (
 	"github.com/mohsenottello/golang/internal/store"
 )
 
-// Deps is everything the handlers need. Passed in from main, never global.
 type Deps struct {
 	Store   *store.Store
 	Mailer  *mail.Mailer
 	BaseURL string
-	Static  fs.FS // the built React app
+	Static  fs.FS
 }
 
 type handlers struct{ Deps }
 
-// NewRouter is the single map of the API. Add new routes here.
+// NewRouter is the single map of the API.
 func NewRouter(d Deps) http.Handler {
 	h := &handlers{d}
 	mux := http.NewServeMux()
-	auth := h.requireAdmin // protected routes wrap with this
+	admin := h.requireAdmin
+	user := h.requireUser
 
-	// Auth
-	mux.HandleFunc("POST /api/admin/register", h.register)
-	mux.HandleFunc("POST /api/admin/verify", h.verify)
-	mux.HandleFunc("POST /api/admin/login", h.login)
-	mux.HandleFunc("POST /api/admin/logout", h.logout)
-	mux.Handle("GET /api/admin/me", auth(h.me))
+	// Users: self-service auth
+	mux.HandleFunc("POST /api/auth/register", h.userRegister)
+	mux.HandleFunc("POST /api/auth/verify", h.userVerify)
+	mux.HandleFunc("POST /api/auth/login", h.userLogin)
+	mux.HandleFunc("POST /api/auth/logout", h.userLogout)
+	mux.HandleFunc("POST /api/auth/forgot-password", h.forgotPassword)
+	mux.HandleFunc("POST /api/auth/reset-password", h.resetPassword)
+	mux.Handle("GET /api/auth/me", user(h.userMe))
 
-	// Users (example resource)
-	mux.Handle("GET /api/users", auth(h.listUsers))
-	mux.Handle("POST /api/users", auth(h.createUser))
-	mux.Handle("GET /api/users/{id}", auth(h.getUser))
-	mux.Handle("DELETE /api/users/{id}", auth(h.deleteUser))
+	// Admins: login only (seeded from config), plus user management
+	mux.HandleFunc("POST /api/admin/login", h.adminLogin)
+	mux.HandleFunc("POST /api/admin/logout", h.adminLogout)
+	mux.Handle("GET /api/admin/me", admin(h.adminMe))
+	mux.Handle("GET /api/admin/users", admin(h.listUsers))
+	mux.Handle("GET /api/admin/users/{id}", admin(h.getUser))
+	mux.Handle("DELETE /api/admin/users/{id}", admin(h.deleteUser))
 
-	// Health check for Docker / load balancers
 	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("ok"))
 	})
 
-	// React app for everything else
 	mux.Handle("/", spaHandler(d.Static))
 
 	return recoverPanic(logRequests(mux))

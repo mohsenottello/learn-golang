@@ -12,6 +12,10 @@ type Config struct {
 	DatabaseURL string
 	BaseURL     string
 	SMTP        mail.Config
+
+	// Seed admin. If both are set, this admin is created on startup (if missing).
+	AdminEmail    string
+	AdminPassword string
 }
 
 func Load() Config {
@@ -26,6 +30,8 @@ func Load() Config {
 			Pass: os.Getenv("SMTP_PASS"),
 			From: env("SMTP_FROM", "noreply@example.com"),
 		},
+		AdminEmail:    os.Getenv("ADMIN_EMAIL"),
+		AdminPassword: os.Getenv("ADMIN_PASSWORD"),
 	}
 }
 

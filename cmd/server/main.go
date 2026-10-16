@@ -8,8 +8,11 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
+
+	"golang.org/x/crypto/bcrypt"
 
 	"github.com/mohsenottello/golang/internal/config"
 	"github.com/mohsenottello/golang/internal/httpapi"
@@ -20,8 +23,9 @@ import (
 
 func main() {
 	cfg := config.Load()
+	ctx := context.Background()
 
-	st, err := store.Open(context.Background(), cfg.DatabaseURL)
+	st, err := store.Open(ctx, cfg.DatabaseURL)
 	if err != nil {
 		log.Fatal("store: ", err)
 	}
@@ -29,6 +33,16 @@ func main() {
 
 	if err := st.Migrate(); err != nil {
 		log.Fatal("migrate: ", err)
+	}
+
+	if cfg.AdminEmail != "" && cfg.AdminPassword != "" {
+		hash, err := bcrypt.GenerateFromPassword([]byte(cfg.AdminPassword), bcrypt.DefaultCost)
+		if err != nil {
+			log.Fatal("admin seed: ", err)
+		}
+		if err := st.EnsureAdmin(ctx, strings.ToLower(cfg.AdminEmail), string(hash)); err != nil {
+			log.Fatal("admin seed: ", err)
+		}
 	}
 
 	srv := &http.Server{
@@ -42,7 +56,6 @@ func main() {
 		ReadHeaderTimeout: 10 * time.Second,
 	}
 
-	// Graceful shutdown: finish in-flight requests on SIGINT/SIGTERM.
 	go func() {
 		log.Println("listening on", cfg.Addr)
 		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
@@ -54,8 +67,8 @@ func main() {
 	signal.Notify(stop, syscall.SIGINT, syscall.SIGTERM)
 	<-stop
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	shutdownCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 	log.Println("shutting down")
-	srv.Shutdown(ctx)
+	srv.Shutdown(shutdownCtx)
 }
