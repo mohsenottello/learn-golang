@@ -4,3 +4,4 @@
 *.md
 web/node_modules
 web/dist
+tmp/

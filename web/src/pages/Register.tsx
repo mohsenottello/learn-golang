@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { auth } from "../api";
-import { ErrorPanel, Message, TextField, useSubmit } from "../components";
+import { ErrorPanel, Message, TextField, useSubmit } from "../ui";
 
 export default function Register() {
   const [name, setName] = useState("");

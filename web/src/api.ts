@@ -8,7 +8,7 @@ export class ApiError extends Error {
   }
 }
 
-async function request<T>(path: string, method: "GET" | "POST" | "DELETE", body?: unknown): Promise<T> {
+async function request<T>(path: string, method: "GET" | "POST" | "PUT" | "DELETE", body?: unknown): Promise<T> {
   const res = await fetch(path, {
     method,
     headers: body === undefined ? {} : { "Content-Type": "application/json" },
@@ -41,4 +41,59 @@ export const admin = {
   me: () => get<Admin>("/api/admin/me"),
   listUsers: () => get<User[]>("/api/admin/users"),
   deleteUser: (id: number) => del<void>(`/api/admin/users/${id}`),
+};
+
+// ---------- resume ----------
+
+export type Lang = "de" | "en";
+
+export type Resume = {
+  user_id?: number; slug: string; published: boolean; default_lang: Lang;
+  title: string; title_en: string; subtitle: string; subtitle_en: string; about: string; about_en: string;
+  email: string; phone: string; location: string; linkedin: string; has_photo: boolean; updated_at?: string;
+};
+export type Software = { id: number; name: string; position: number };
+export type Language = { id: number; name: string; name_en: string; level: string; level_en: string; position: number };
+export type Education = {
+  id: number; degree: string; degree_en: string; school: string; school_en: string;
+  date_from: string; date_to: string; position: number;
+};
+export type Bullet = { id: number; text: string; text_en: string; position: number };
+export type Experience = {
+  id: number; company: string; link: string; role: string; role_en: string; subtitle: string; subtitle_en: string;
+  date_from: string; date_to: string; location: string; location_en: string; bullets: Bullet[]; position: number;
+};
+export type FullResume = {
+  resume: Resume; name: string; lang?: Lang;
+  software: Software[]; languages: Language[]; education: Education[]; experience: Experience[];
+};
+
+export type SectionKey = "software" | "languages" | "education" | "experience";
+type ItemOf<K extends SectionKey> =
+  K extends "software" ? Software : K extends "languages" ? Language : K extends "education" ? Education : Experience;
+
+const put = <T,>(p: string, b: unknown) => request<T>(p, "PUT", b);
+
+export const resume = {
+  mine: () => get<FullResume>("/api/me/resume"),
+  save: (r: Resume) => put<Resume>("/api/me/resume", r),
+  uploadPhoto: async (file: File) => {
+    const fd = new FormData();
+    fd.append("photo", file);
+    const res = await fetch("/api/me/resume/photo", { method: "PUT", body: fd, credentials: "same-origin" });
+    if (!res.ok) throw new ApiError(res.status, (await res.json().catch(() => ({}))).error ?? "Upload failed");
+  },
+  createItem: <K extends SectionKey>(section: K, item: Omit<ItemOf<K>, "id" | "position">) =>
+    post<ItemOf<K>>(`/api/me/resume/${section}`, item),
+  updateItem: <K extends SectionKey>(section: K, item: ItemOf<K>) =>
+    put<ItemOf<K>>(`/api/me/resume/${section}/${item.id}`, item),
+  deleteItem: (section: SectionKey, id: number) => del<void>(`/api/me/resume/${section}/${id}`),
+  reorder: (section: SectionKey, ids: number[]) => put<void>(`/api/me/resume/order/${section}`, { ids }),
+
+  createBullet: (expId: number, b: Omit<Bullet, "id" | "position">) => post<Bullet>(`/api/me/resume/experience/${expId}/bullets`, b),
+  updateBullet: (expId: number, b: Bullet) => put<Bullet>(`/api/me/resume/experience/${expId}/bullets/${b.id}`, b),
+  deleteBullet: (expId: number, id: number) => del<void>(`/api/me/resume/experience/${expId}/bullets/${id}`),
+  reorderBullets: (expId: number, ids: number[]) => put<void>(`/api/me/resume/experience/${expId}/bullets-order`, { ids }),
+
+  public: (slug: string, lang?: Lang) => get<FullResume>(`/api/resumes/${slug}${lang ? `?lang=${lang}` : ""}`),
 };

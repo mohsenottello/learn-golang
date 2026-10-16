@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Admin, User, admin } from "../api";
-import { ErrorPanel } from "../components";
+import { ErrorPanel } from "../ui";
 
 export default function AdminDashboard() {
   const [me, setMe] = useState<Admin | null>(null);

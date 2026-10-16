@@ -1,14 +1,16 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { auth } from "../api";
-import { ErrorPanel, TextField, useSubmit } from "../components";
+import { useAuth } from "../auth";
+import { ErrorPanel, TextField, useSubmit } from "../ui";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
+  const { setUser } = useAuth();
   const { onSubmit, busy, error } = useSubmit(async () => {
-    await auth.login(email, password);
+    setUser(await auth.login(email, password));
     navigate("/account");
   });
 

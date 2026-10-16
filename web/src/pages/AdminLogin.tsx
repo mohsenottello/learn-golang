@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { admin } from "../api";
-import { ErrorPanel, TextField, useSubmit } from "../components";
+import { ErrorPanel, TextField, useSubmit } from "../ui";
 
 export default function AdminLogin() {
   const [email, setEmail] = useState("");

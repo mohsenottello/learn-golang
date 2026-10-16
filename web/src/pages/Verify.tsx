@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { auth } from "../api";
-import { Message } from "../components";
+import { Message } from "../ui";
 
 export default function Verify() {
   const [params] = useSearchParams();
