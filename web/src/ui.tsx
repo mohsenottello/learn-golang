@@ -1,4 +1,5 @@
 import { FormEvent, ReactNode, useId, useState } from "react";
+import { useToast } from "./toast";
 
 export function TextField(props: {
   label: string;
@@ -34,18 +35,17 @@ export function Message({ title, children }: { title: string; children: ReactNod
 /** Wraps a submit handler with busy/error state so every form looks the same. */
 export function useSubmit(action: () => Promise<void>) {
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const toast = useToast();
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     setBusy(true);
-    setError(null);
     try {
       await action();
     } catch (err) {
-      setError((err as Error).message);
+      toast((err as Error).message, "error");
     } finally {
       setBusy(false);
     }
   }
-  return { onSubmit, busy, error };
+  return { onSubmit, busy };
 }

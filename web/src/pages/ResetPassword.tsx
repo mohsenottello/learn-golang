@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { auth } from "../api";
-import { ErrorPanel, Message, TextField, useSubmit } from "../ui";
+import { Message, TextField, useSubmit } from "../ui";
 
 export default function ResetPassword() {
   const [params] = useSearchParams();
@@ -9,7 +9,7 @@ export default function ResetPassword() {
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [done, setDone] = useState<string | null>(null);
-  const { onSubmit, busy, error } = useSubmit(async () => {
+  const { onSubmit, busy } = useSubmit(async () => {
     if (password !== confirm) throw new Error("Passwords don't match.");
     const r = await auth.resetPassword(token, password);
     setDone(r.message);
@@ -28,7 +28,6 @@ export default function ResetPassword() {
   return (
     <>
       <span className="card-title">Choose a new password</span>
-      <ErrorPanel message={error} />
       <form onSubmit={onSubmit}>
         <TextField label="New password" type="password" value={password} onChange={setPassword} minLength={8} />
         <TextField label="Confirm password" type="password" value={confirm} onChange={setConfirm} minLength={8} />

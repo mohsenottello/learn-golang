@@ -3,6 +3,7 @@ package httpapi
 import (
 	"encoding/json"
 	"errors"
+	"log"
 	"net/http"
 	"strings"
 )
@@ -27,4 +28,10 @@ func readJSON(w http.ResponseWriter, r *http.Request, v any) error {
 	dec := json.NewDecoder(http.MaxBytesReader(w, r.Body, 1<<20))
 	dec.DisallowUnknownFields()
 	return dec.Decode(v)
+}
+
+// serverError logs the real cause and sends a generic 500 to the client.
+func serverError(w http.ResponseWriter, r *http.Request, err error) {
+	log.Printf("500 %s %s: %v", r.Method, r.URL.Path, err)
+	serverError(w, r, err)
 }

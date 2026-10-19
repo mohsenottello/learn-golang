@@ -36,7 +36,10 @@ export default function PublicResume() {
         <Link to={`/${slug}/de`} className={lang === "de" ? "active" : ""}>DE</Link>
         <Link to={`/${slug}/en`} className={lang === "en" ? "active" : ""}>EN</Link>
       </div>
-      <div className="cv" lang={lang}>
+      <div className="cv" lang={lang} style={{
+          "--side-bg": r.side_bg, "--side-text": r.side_text,
+          "--main-bg": r.main_bg, "--main-text": r.main_text, "--accent": r.accent,
+        } as React.CSSProperties}>
         <aside className="cv-side">
           {r.has_photo && <img className="cv-photo" src={`/api/resumes/${slug}/photo`} alt={data.name} />}
           <h4 className="cv-name">{data.name}</h4>

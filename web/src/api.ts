@@ -53,7 +53,9 @@ export type Lang = "de" | "en";
 export type Resume = {
   user_id?: number; slug: string; published: boolean; default_lang: Lang;
   title: string; title_en: string; subtitle: string; subtitle_en: string; about: string; about_en: string;
-  email: string; phone: string; location: string; linkedin: string; has_photo: boolean; updated_at?: string;
+  email: string; phone: string; location: string; linkedin: string; has_photo: boolean;
+  side_bg?: string; side_text?: string; main_bg?: string; main_text?: string; accent?: string;
+  updated_at?: string;
 };
 export type Software = { id: number; name: string; position: number };
 export type Language = { id: number; name: string; name_en: string; level: string; level_en: string; position: number };

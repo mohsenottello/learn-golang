@@ -2,6 +2,7 @@ package httpapi
 
 import (
 	"context"
+	"errors"
 	"log"
 	"net/http"
 	"runtime/debug"
@@ -89,7 +90,7 @@ func recoverPanic(next http.Handler) http.Handler {
 		defer func() {
 			if rec := recover(); rec != nil {
 				log.Printf("panic: %v\n%s", rec, debug.Stack())
-				writeError(w, http.StatusInternalServerError, "server error")
+				serverError(w, r, errors.New("internal server error"))
 			}
 		}()
 		next.ServeHTTP(w, r)

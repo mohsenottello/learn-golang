@@ -30,7 +30,7 @@ func (h *handlers) adminLogin(w http.ResponseWriter, r *http.Request) {
 	token, _ := newToken()
 	expires := time.Now().Add(sessionTTL)
 	if err := h.Store.CreateAdminSession(r.Context(), token, admin.ID, expires); err != nil {
-		writeError(w, http.StatusInternalServerError, "server error")
+		serverError(w, r, err)
 		return
 	}
 	h.setSessionCookie(w, adminCookie, token, expires)

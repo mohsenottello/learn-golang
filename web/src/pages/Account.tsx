@@ -1,10 +1,10 @@
 import { ChangeEvent, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Bullet, Education, Experience, FullResume, Lang, Language, Resume, Software, resume as api } from "../api";
-import { useAuth } from "../auth";
-import { ErrorPanel, TextField } from "../ui";
+import { TextField } from "../ui";
 import SectionEditor from "../components/SectionEditor";
 import AccountSettings from "./AccountSettings";
+import { useToast } from "../toast";
 
 type Section = "profile" | "software" | "languages" | "education" | "experience" | "account";
 const SECTIONS: { key: Section; label: string; icon: string }[] = [
@@ -16,6 +16,14 @@ const SECTIONS: { key: Section; label: string; icon: string }[] = [
   { key: "account", label: "Account", icon: "settings" },
 ];
 
+const DEFAULT_COLORS = {
+  side_bg: "#7f7a72",
+  side_text: "#ffffff",
+  main_bg: "#ffffff",
+  main_text: "#222222",
+  accent: "#555555",
+} as const;
+
 export default function Account() {
   const [data, setData] = useState<FullResume | null>(null);
   const [section, setSection] = useState<Section>("profile");
@@ -23,12 +31,15 @@ export default function Account() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    api.mine().then(setData).catch(() => navigate("/login"));
-  }, [navigate]);
+  api.mine().then(setData).catch(() => navigate("/login"));
+}, [navigate]);
+
+  useEffect(() => {
+  if (selectedExp === null && data?.experience.length) setSelectedExp(data.experience[0].id);
+}, [data, selectedExp]);
 
   if (!data) return <p>Loading…</p>;
   const reload = async () => setData(await api.mine());
-  if (selectedExp === null && data.experience.length > 0) setSelectedExp(data.experience[0].id);
   const r = data.resume;
 
   return (
@@ -145,33 +156,28 @@ export default function Account() {
 
 function ProfileEditor({ data, onChange }: { data: FullResume; onChange: (d: FullResume) => void }) {
   const [header, setHeader] = useState<Resume>(data.resume);
-  const [error, setError] = useState<string | null>(null);
-  const [saved, setSaved] = useState(false);
   const [photoVersion, setPhotoVersion] = useState(0);
-  const { logout } = useAuth();
-  const navigate = useNavigate();
-
+  const toast = useToast();
   const set = (k: keyof Resume) => (v: string) => setHeader({ ...header, [k]: v });
 
   async function save() {
-    setError(null); setSaved(false);
     try {
       const r = await api.save(header);
       setHeader(r);
       onChange({ ...data, resume: r });
-      setSaved(true);
-    } catch (e) { setError((e as Error).message); }
+      toast("Profile saved successfully.", "success");
+    } catch (e) { toast((e as Error).message, "error"); }
   }
 
   async function uploadPhoto(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-    setError(null);
     try {
       await api.uploadPhoto(file);
       setHeader({ ...header, has_photo: true });
       setPhotoVersion((v) => v + 1);
-    } catch (err) { setError((err as Error).message); }
+      toast("Photo uploaded.");
+    } catch (err) { toast((err as Error).message, "error"); }
   }
 
   const pair = (label: string, key: "title" | "subtitle", hint: string) => (
@@ -182,13 +188,18 @@ function ProfileEditor({ data, onChange }: { data: FullResume; onChange: (d: Ful
     </div>
   );
 
+  const colors: { key: keyof Resume; label: string }[] = [
+    { key: "side_bg", label: "Sidebar background" },
+    { key: "side_text", label: "Sidebar text" },
+    { key: "main_bg", label: "Main background" },
+    { key: "main_text", label: "Main text" },
+    { key: "accent", label: "Lines & headings" },
+  ];
+
   return (
     <div className="card">
       <div className="card-content">
         <span className="card-title">Profile</span>
-        <ErrorPanel message={error} />
-        {saved && <div className="card-panel teal lighten-5 teal-text text-darken-3">Saved.</div>}
-
         <div className="row" style={{ marginBottom: 0 }}>
           <div className="col s12 m4 center-align">
             {header.has_photo
@@ -234,8 +245,52 @@ function ProfileEditor({ data, onChange }: { data: FullResume; onChange: (d: Ful
             <label className="active">About me (EN)</label>
           </div>
         </div>
+        <h6 style={{ marginTop: "1.5rem" }}>Colours</h6>
+        <div className="row" style={{ marginBottom: 0 }}>
+          <div className="col s12 m7">
+            <div className="row" style={{ marginBottom: 0 }}>
+              {colors.map((c) => (
+                <div key={c.key} className="col s6" style={{ marginBottom: 12 }}>
+                  <label style={{ display: "block" }}>{c.label}</label>
+                  <input type="color" value={header[c.key] as string} onChange={(e) => set(c.key)(e.target.value)} />
+                </div>
+              ))}
+
+              <button type="button" className="waves-effect waves-light red btn" onClick={() => setHeader({ ...header, ...DEFAULT_COLORS })}>
+                <i className="material-icons left">restart_alt</i>Reset to defaults
+              </button>
+            </div>
+          </div>
+          <div className="col s12 m5">
+            <ThemePreview r={header} />
+          </div>
+        </div>
         <button className="btn teal" onClick={save}>Save</button>{" "}
-        <button className="btn-flat red-text right" onClick={() => logout().then(() => navigate("/login"))}>Log out</button>
+      </div>
+    </div>
+  );
+}
+
+function ThemePreview({ r }: { r: Resume }) {
+  return (
+    <div className="theme-preview" style={{
+      "--side-bg": r.side_bg, "--side-text": r.side_text,
+      "--main-bg": r.main_bg, "--main-text": r.main_text, "--accent": r.accent,
+    } as React.CSSProperties}>
+      <div className="tp-side">
+        <div className="tp-photo" />
+        <div className="tp-name">Name</div>
+        <div className="tp-rule" />
+        <div className="tp-line" /><div className="tp-line short" />
+      </div>
+      <div className="tp-main">
+        <div className="tp-title">Berufserfahrung</div>
+        <div className="tp-job">
+          <div className="tp-line dark" /><div className="tp-line short" />
+        </div>
+        <div className="tp-job">
+          <div className="tp-line dark" /><div className="tp-line short" />
+        </div>
       </div>
     </div>
   );

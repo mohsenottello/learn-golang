@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { admin } from "../api";
-import { ErrorPanel, TextField, useSubmit } from "../ui";
+import { TextField, useSubmit } from "../ui";
 
 export default function AdminLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
-  const { onSubmit, busy, error } = useSubmit(async () => {
+  const { onSubmit, busy } = useSubmit(async () => {
     await admin.login(email, password);
     navigate("/admin");
   });
@@ -15,7 +15,6 @@ export default function AdminLogin() {
   return (
     <>
       <span className="card-title">Admin login</span>
-      <ErrorPanel message={error} />
       <form onSubmit={onSubmit}>
         <TextField label="Email" type="email" value={email} onChange={setEmail} />
         <TextField label="Password" type="password" value={password} onChange={setPassword} />

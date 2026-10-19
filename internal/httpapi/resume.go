@@ -98,7 +98,7 @@ func (h *handlers) myResume(r *http.Request) (*store.Resume, error) {
 
 func (h *handlers) ensureResume(w http.ResponseWriter, r *http.Request) bool {
 	if _, err := h.myResume(r); err != nil {
-		writeError(w, http.StatusInternalServerError, "server error")
+		serverError(w, r, err)
 		return false
 	}
 	return true
@@ -107,12 +107,12 @@ func (h *handlers) ensureResume(w http.ResponseWriter, r *http.Request) bool {
 func (h *handlers) getMyResume(w http.ResponseWriter, r *http.Request) {
 	res, err := h.myResume(r)
 	if err != nil {
-		writeError(w, http.StatusInternalServerError, "server error")
+		serverError(w, r, err)
 		return
 	}
 	full, err := h.loadFull(r, res, currentUser(r).Name)
 	if err != nil {
-		writeError(w, http.StatusInternalServerError, "server error")
+		serverError(w, r, err)
 		return
 	}
 	writeJSON(w, http.StatusOK, full)
@@ -132,6 +132,14 @@ func (h *handlers) updateMyResume(w http.ResponseWriter, r *http.Request) {
 	if !validLangs[in.DefaultLang] {
 		in.DefaultLang = "de"
 	}
+	var hexColor = regexp.MustCompile(`^#[0-9a-fA-F]{6}$`)
+
+	for _, c := range []string{in.SideBg, in.SideText, in.MainBg, in.MainText, in.Accent} {
+			if !hexColor.MatchString(c) {
+					writeError(w, http.StatusBadRequest, "Colours must be hex like #7f7a72.")
+					return
+			}
+	}
 	in.UserID = currentUser(r).ID
 	if !h.ensureResume(w, r) {
 		return
@@ -141,7 +149,7 @@ func (h *handlers) updateMyResume(w http.ResponseWriter, r *http.Request) {
 	case errors.Is(err, store.ErrDuplicate):
 		writeError(w, http.StatusConflict, "That slug is already taken.")
 	case err != nil:
-		writeError(w, http.StatusInternalServerError, "server error")
+		serverError(w, r, err)
 	default:
 		writeJSON(w, http.StatusOK, res)
 	}
@@ -177,7 +185,7 @@ func (h *handlers) uploadMyPhoto(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err := h.Store.SetResumePhoto(r.Context(), currentUser(r).ID, data, ct); err != nil {
-		writeError(w, http.StatusInternalServerError, "server error")
+		serverError(w, r, err)
 		return
 	}
 	w.WriteHeader(http.StatusNoContent)
@@ -201,14 +209,14 @@ func pathID(r *http.Request, name string) (int64, bool) {
 	return id, err == nil
 }
 
-func (h *handlers) writeItemResult(w http.ResponseWriter, v any, err error) {
+func (h *handlers) writeItemResult(w http.ResponseWriter, r *http.Request, v any, err error) {
 	switch {
 	case errors.Is(err, store.ErrNotFound):
 		writeError(w, http.StatusNotFound, "not found")
 	case errors.Is(err, store.ErrInvalid):
 		writeError(w, http.StatusBadRequest, "Dates must be in YYYY-MM format.")
 	case err != nil:
-		writeError(w, http.StatusInternalServerError, "server error")
+		serverError(w, r, err)
 	case v == nil:
 		w.WriteHeader(http.StatusNoContent)
 	default:
@@ -229,7 +237,7 @@ func (h *handlers) reorderSection(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, "unknown section")
 		return
 	}
-	h.writeItemResult(w, nil, err)
+	h.writeItemResult(w, r, nil, err)
 }
 
 // software
@@ -243,7 +251,7 @@ func (h *handlers) createSoftware(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	v, err := h.Store.CreateSoftware(r.Context(), currentUser(r).ID, in)
-	h.writeItemResult(w, v, err)
+	h.writeItemResult(w, r, v, err)
 }
 func (h *handlers) updateSoftware(w http.ResponseWriter, r *http.Request) {
 	id, ok := pathID(r, "id")
@@ -254,7 +262,7 @@ func (h *handlers) updateSoftware(w http.ResponseWriter, r *http.Request) {
 	}
 	in.ID = id
 	v, err := h.Store.UpdateSoftware(r.Context(), currentUser(r).ID, in)
-	h.writeItemResult(w, v, err)
+	h.writeItemResult(w, r, v, err)
 }
 func (h *handlers) deleteSoftware(w http.ResponseWriter, r *http.Request) {
 	id, ok := pathID(r, "id")
@@ -262,7 +270,7 @@ func (h *handlers) deleteSoftware(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, "invalid id")
 		return
 	}
-	h.writeItemResult(w, nil, h.Store.DeleteSoftware(r.Context(), currentUser(r).ID, id))
+	h.writeItemResult(w, r, nil, h.Store.DeleteSoftware(r.Context(), currentUser(r).ID, id))
 }
 
 // languages
@@ -276,7 +284,7 @@ func (h *handlers) createLanguage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	v, err := h.Store.CreateLanguage(r.Context(), currentUser(r).ID, in)
-	h.writeItemResult(w, v, err)
+	h.writeItemResult(w, r, v, err)
 }
 func (h *handlers) updateLanguage(w http.ResponseWriter, r *http.Request) {
 	id, ok := pathID(r, "id")
@@ -287,7 +295,7 @@ func (h *handlers) updateLanguage(w http.ResponseWriter, r *http.Request) {
 	}
 	in.ID = id
 	v, err := h.Store.UpdateLanguage(r.Context(), currentUser(r).ID, in)
-	h.writeItemResult(w, v, err)
+	h.writeItemResult(w, r, v, err)
 }
 func (h *handlers) deleteLanguage(w http.ResponseWriter, r *http.Request) {
 	id, ok := pathID(r, "id")
@@ -295,7 +303,7 @@ func (h *handlers) deleteLanguage(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, "invalid id")
 		return
 	}
-	h.writeItemResult(w, nil, h.Store.DeleteLanguage(r.Context(), currentUser(r).ID, id))
+	h.writeItemResult(w, r, nil, h.Store.DeleteLanguage(r.Context(), currentUser(r).ID, id))
 }
 
 // education
@@ -309,7 +317,7 @@ func (h *handlers) createEducation(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	v, err := h.Store.CreateEducation(r.Context(), currentUser(r).ID, in)
-	h.writeItemResult(w, v, err)
+	h.writeItemResult(w, r, v, err)
 }
 func (h *handlers) updateEducation(w http.ResponseWriter, r *http.Request) {
 	id, ok := pathID(r, "id")
@@ -320,7 +328,7 @@ func (h *handlers) updateEducation(w http.ResponseWriter, r *http.Request) {
 	}
 	in.ID = id
 	v, err := h.Store.UpdateEducation(r.Context(), currentUser(r).ID, in)
-	h.writeItemResult(w, v, err)
+	h.writeItemResult(w, r, v, err)
 }
 func (h *handlers) deleteEducation(w http.ResponseWriter, r *http.Request) {
 	id, ok := pathID(r, "id")
@@ -328,7 +336,7 @@ func (h *handlers) deleteEducation(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, "invalid id")
 		return
 	}
-	h.writeItemResult(w, nil, h.Store.DeleteEducation(r.Context(), currentUser(r).ID, id))
+	h.writeItemResult(w, r, nil, h.Store.DeleteEducation(r.Context(), currentUser(r).ID, id))
 }
 
 // experience
@@ -342,7 +350,7 @@ func (h *handlers) createExperience(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	v, err := h.Store.CreateExperience(r.Context(), currentUser(r).ID, in)
-	h.writeItemResult(w, v, err)
+	h.writeItemResult(w, r, v, err)
 }
 func (h *handlers) updateExperience(w http.ResponseWriter, r *http.Request) {
 	id, ok := pathID(r, "id")
@@ -353,7 +361,7 @@ func (h *handlers) updateExperience(w http.ResponseWriter, r *http.Request) {
 	}
 	in.ID = id
 	v, err := h.Store.UpdateExperience(r.Context(), currentUser(r).ID, in)
-	h.writeItemResult(w, v, err)
+	h.writeItemResult(w, r, v, err)
 }
 func (h *handlers) deleteExperience(w http.ResponseWriter, r *http.Request) {
 	id, ok := pathID(r, "id")
@@ -361,7 +369,7 @@ func (h *handlers) deleteExperience(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, "invalid id")
 		return
 	}
-	h.writeItemResult(w, nil, h.Store.DeleteExperience(r.Context(), currentUser(r).ID, id))
+	h.writeItemResult(w, r, nil, h.Store.DeleteExperience(r.Context(), currentUser(r).ID, id))
 }
 
 // bullets: /api/me/resume/experience/{id}/bullets[/{bid}]
@@ -373,7 +381,7 @@ func (h *handlers) createBullet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	v, err := h.Store.CreateBullet(r.Context(), currentUser(r).ID, expID, in)
-	h.writeItemResult(w, v, err)
+	h.writeItemResult(w, r, v, err)
 }
 func (h *handlers) updateBullet(w http.ResponseWriter, r *http.Request) {
 	expID, ok1 := pathID(r, "id")
@@ -385,7 +393,7 @@ func (h *handlers) updateBullet(w http.ResponseWriter, r *http.Request) {
 	}
 	in.ID = bid
 	v, err := h.Store.UpdateBullet(r.Context(), currentUser(r).ID, expID, in)
-	h.writeItemResult(w, v, err)
+	h.writeItemResult(w, r, v, err)
 }
 func (h *handlers) deleteBullet(w http.ResponseWriter, r *http.Request) {
 	expID, ok1 := pathID(r, "id")
@@ -394,7 +402,7 @@ func (h *handlers) deleteBullet(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, "invalid id")
 		return
 	}
-	h.writeItemResult(w, nil, h.Store.DeleteBullet(r.Context(), currentUser(r).ID, expID, bid))
+	h.writeItemResult(w, r, nil, h.Store.DeleteBullet(r.Context(), currentUser(r).ID, expID, bid))
 }
 func (h *handlers) reorderBullets(w http.ResponseWriter, r *http.Request) {
 	expID, ok := pathID(r, "id")
@@ -405,5 +413,5 @@ func (h *handlers) reorderBullets(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, "invalid request")
 		return
 	}
-	h.writeItemResult(w, nil, h.Store.ReorderBullets(r.Context(), currentUser(r).ID, expID, in.IDs))
+	h.writeItemResult(w, r, nil, h.Store.ReorderBullets(r.Context(), currentUser(r).ID, expID, in.IDs))
 }

@@ -1,5 +1,5 @@
 import { DragEvent, useState } from "react";
-import { ErrorPanel } from "../ui";
+import { useToast } from "../toast";
 
 export type Field<T> = {
   key: keyof T & string;
@@ -29,7 +29,7 @@ type Props<T extends { id: number }> = {
 /** Generic list + form editor used by all resume sections. Rows are drag-sortable. */
 export default function SectionEditor<T extends { id: number }>(p: Props<T>) {
   const [editing, setEditing] = useState<Partial<T> | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const toast = useToast();
   const [busy, setBusy] = useState(false);
   const [order, setOrder] = useState<T[] | null>(null);
   const [dragId, setDragId] = useState<number | null>(null);
@@ -46,7 +46,7 @@ export default function SectionEditor<T extends { id: number }>(p: Props<T>) {
   };
 
   async function save() {
-    setBusy(true); setError(null);
+    setBusy(true);
     try {
       for (const f of p.fields) {
         const v = editing![f.key];
@@ -55,8 +55,9 @@ export default function SectionEditor<T extends { id: number }>(p: Props<T>) {
       if ((editing as T).id) await p.onUpdate(editing as T);
       else await p.onCreate(editing as Omit<T, "id" | "position">);
       setEditing(null);
+      toast("Saved")
     } catch (e) {
-      setError((e as Error).message);
+      toast((e as Error).message, "error");
     } finally {
       setBusy(false);
     }
@@ -64,7 +65,7 @@ export default function SectionEditor<T extends { id: number }>(p: Props<T>) {
 
   async function remove(id: number) {
     if (!confirm("Delete this entry?")) return;
-    try { await p.onDelete(id); } catch (e) { setError((e as Error).message); }
+    try { await p.onDelete(id); } catch (e) { toast((e as Error).message, "error"); }
   }
 
   function onDragStart(e: DragEvent, id: number) {
@@ -85,7 +86,7 @@ export default function SectionEditor<T extends { id: number }>(p: Props<T>) {
     if (!order) return;
     const ids = order.map((x) => x.id);
     setDragId(null);
-    try { await p.onReorder(ids); } catch (e) { setError((e as Error).message); } finally { setOrder(null); }
+    try { await p.onReorder(ids); } catch (e) { toast((e as Error).message, "error"); } finally { setOrder(null); }
   }
 
   const set = (key: string, value: string) => setEditing({ ...editing!, [key]: value });
@@ -106,7 +107,6 @@ export default function SectionEditor<T extends { id: number }>(p: Props<T>) {
 
   const body = (
     <>
-      <ErrorPanel message={error} />
       {items.length === 0 && !editing && <p className="grey-text">Nothing here yet.</p>}
       <ul className="collection">
         {items.map((it) => {

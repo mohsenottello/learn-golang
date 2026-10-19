@@ -31,7 +31,6 @@ export default function AdminDashboard() {
     <>
       <span className="card-title">Users</span>
       <p>Admin: <strong>{me.email}</strong></p>
-      <ErrorPanel message={error} />
       <table className="striped">
         <thead>
           <tr><th>Name</th><th>Email</th><th>Verified</th><th>Joined</th><th></th></tr>

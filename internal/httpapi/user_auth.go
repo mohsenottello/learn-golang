@@ -39,7 +39,7 @@ func (h *handlers) userRegister(w http.ResponseWriter, r *http.Request) {
 
 	hash, err := bcrypt.GenerateFromPassword([]byte(in.Password), bcrypt.DefaultCost)
 	if err != nil {
-		writeError(w, http.StatusInternalServerError, "server error")
+		serverError(w, r, err)
 		return
 	}
 
@@ -50,7 +50,7 @@ func (h *handlers) userRegister(w http.ResponseWriter, r *http.Request) {
 		// say nothing
 	case err != nil:
 		log.Println("register:", err)
-		writeError(w, http.StatusInternalServerError, "server error")
+		serverError(w, r, err)
 		return
 	default:
 		link := h.BaseURL + "/verify?token=" + raw
@@ -73,7 +73,7 @@ func (h *handlers) userVerify(w http.ResponseWriter, r *http.Request) {
 	case errors.Is(err, store.ErrNotFound):
 		writeError(w, http.StatusBadRequest, "This verification link is invalid or was already used.")
 	case err != nil:
-		writeError(w, http.StatusInternalServerError, "server error")
+		serverError(w, r, err)
 	default:
 		writeJSON(w, http.StatusOK, map[string]string{"message": "Your account is verified. You can log in now."})
 	}
@@ -100,7 +100,7 @@ func (h *handlers) userLogin(w http.ResponseWriter, r *http.Request) {
 	token, _ := newToken()
 	expires := time.Now().Add(sessionTTL)
 	if err := h.Store.CreateUserSession(r.Context(), token, user.ID, expires); err != nil {
-		writeError(w, http.StatusInternalServerError, "server error")
+		serverError(w, r, err)
 		return
 	}
 	h.setSessionCookie(w, userCookie, token, expires)
@@ -138,7 +138,7 @@ func (h *handlers) forgotPassword(w http.ResponseWriter, r *http.Request) {
 		// unknown or unverified email: say nothing
 	case err != nil:
 		log.Println("forgot password:", err)
-		writeError(w, http.StatusInternalServerError, "server error")
+		serverError(w, r, err)
 		return
 	default:
 		link := h.BaseURL + "/reset-password?token=" + raw
@@ -169,17 +169,17 @@ func (h *handlers) resetPassword(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, "This reset link is invalid or has expired.")
 		return
 	case err != nil:
-		writeError(w, http.StatusInternalServerError, "server error")
+		serverError(w, r, err)
 		return
 	}
 
 	hash, err := bcrypt.GenerateFromPassword([]byte(in.Password), bcrypt.DefaultCost)
 	if err != nil {
-		writeError(w, http.StatusInternalServerError, "server error")
+		serverError(w, r, err)
 		return
 	}
 	if err := h.Store.UpdatePassword(r.Context(), user.ID, string(hash)); err != nil {
-		writeError(w, http.StatusInternalServerError, "server error")
+		serverError(w, r, err)
 		return
 	}
 	// Log out every existing session: whoever had the old password is gone.

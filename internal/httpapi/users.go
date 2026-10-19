@@ -13,7 +13,7 @@ import (
 func (h *handlers) listUsers(w http.ResponseWriter, r *http.Request) {
 	users, err := h.Store.ListUsers(r.Context())
 	if err != nil {
-		writeError(w, http.StatusInternalServerError, "server error")
+		serverError(w, r, err)
 		return
 	}
 	writeJSON(w, http.StatusOK, users)
@@ -30,7 +30,7 @@ func (h *handlers) getUser(w http.ResponseWriter, r *http.Request) {
 	case errors.Is(err, store.ErrNotFound):
 		writeError(w, http.StatusNotFound, "user not found")
 	case err != nil:
-		writeError(w, http.StatusInternalServerError, "server error")
+		serverError(w, r, err)
 	default:
 		writeJSON(w, http.StatusOK, u)
 	}
@@ -47,7 +47,7 @@ func (h *handlers) deleteUser(w http.ResponseWriter, r *http.Request) {
 	case errors.Is(err, store.ErrNotFound):
 		writeError(w, http.StatusNotFound, "user not found")
 	case err != nil:
-		writeError(w, http.StatusInternalServerError, "server error")
+		serverError(w, r, err)
 	default:
 		w.WriteHeader(http.StatusNoContent)
 	}

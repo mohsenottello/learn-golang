@@ -24,17 +24,24 @@ type Resume struct {
 	Location    string    `json:"location"`
 	LinkedIn    string    `json:"linkedin"`
 	HasPhoto    bool      `json:"has_photo"`
+	SideBg			string    `json:"side_bg"`
+	SideText		string    `json:"side_text"`
+	MainBg			string    `json:"main_bg"`
+	MainText		string    `json:"main_text"`
+	Accent			string    `json:"accent"`
 	UpdatedAt   time.Time `json:"updated_at"`
 }
 
 const resumeCols = `user_id, slug, published, default_lang, title, title_en, subtitle, subtitle_en,
-	about, about_en, email, phone, location, linkedin, photo IS NOT NULL, updated_at`
+	about, about_en, email, phone, location, linkedin, photo IS NOT NULL, updated_at,
+	side_bg, side_text, main_bg, main_text, accent`
 
 func scanResume(row interface{ Scan(...any) error }) (*Resume, error) {
 	var r Resume
 	err := row.Scan(&r.UserID, &r.Slug, &r.Published, &r.DefaultLang, &r.Title, &r.TitleEn,
 		&r.Subtitle, &r.SubtitleEn, &r.About, &r.AboutEn,
-		&r.Email, &r.Phone, &r.Location, &r.LinkedIn, &r.HasPhoto, &r.UpdatedAt)
+		&r.Email, &r.Phone, &r.Location, &r.LinkedIn, &r.HasPhoto, &r.UpdatedAt,
+		&r.SideBg, &r.SideText, &r.MainBg, &r.MainText, &r.Accent)
 	if err != nil {
 		return nil, translate(err)
 	}
@@ -62,12 +69,14 @@ func (s *Store) UpdateResume(ctx context.Context, r *Resume) (*Resume, error) {
 	return scanResume(s.db.QueryRowContext(ctx, `
 		UPDATE resumes SET slug=$2, published=$3, default_lang=$4,
 			title=$5, title_en=$6, subtitle=$7, subtitle_en=$8, about=$9, about_en=$10,
-			email=$11, phone=$12, location=$13, linkedin=$14, updated_at=now()
+			email=$11, phone=$12, location=$13, linkedin=$14,
+			side_bg=$15, side_text=$16, main_bg=$17, main_text=$18, accent=$19,
+			updated_at=now()
 		WHERE user_id = $1
 		RETURNING `+resumeCols,
 		r.UserID, r.Slug, r.Published, r.DefaultLang,
 		r.Title, r.TitleEn, r.Subtitle, r.SubtitleEn, r.About, r.AboutEn,
-		r.Email, r.Phone, r.Location, r.LinkedIn))
+		r.Email, r.Phone, r.Location, r.LinkedIn, r.SideBg, r.SideText, r.MainBg, r.MainText, r.Accent))
 }
 
 // --- photo ---

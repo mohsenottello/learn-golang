@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { auth } from "../api";
-import { ErrorPanel, Message, TextField, useSubmit } from "../ui";
+import { Message, TextField, useSubmit } from "../ui";
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
   const [done, setDone] = useState<string | null>(null);
-  const { onSubmit, busy, error } = useSubmit(async () => {
+  const { onSubmit, busy } = useSubmit(async () => {
     const r = await auth.forgotPassword(email);
     setDone(r.message);
   });
@@ -17,7 +17,6 @@ export default function ForgotPassword() {
     <>
       <span className="card-title">Reset your password</span>
       <p>Enter your email and we'll send you a link to choose a new password.</p>
-      <ErrorPanel message={error} />
       <form onSubmit={onSubmit}>
         <TextField label="Email" type="email" value={email} onChange={setEmail} />
         <button className="btn teal waves-effect waves-light" type="submit" disabled={busy}>

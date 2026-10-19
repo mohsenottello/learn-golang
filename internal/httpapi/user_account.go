@@ -24,7 +24,7 @@ func (h *handlers) updateName(w http.ResponseWriter, r *http.Request) {
 	}
 	u, err := h.Store.UpdateUserName(r.Context(), currentUser(r).ID, name)
 	if err != nil {
-		writeError(w, http.StatusInternalServerError, "server error")
+		serverError(w, r, err)
 		return
 	}
 	writeJSON(w, http.StatusOK, u)
@@ -51,11 +51,11 @@ func (h *handlers) changePassword(w http.ResponseWriter, r *http.Request) {
 	}
 	hash, err := bcrypt.GenerateFromPassword([]byte(in.New), bcrypt.DefaultCost)
 	if err != nil {
-		writeError(w, http.StatusInternalServerError, "server error")
+		serverError(w, r, err)
 		return
 	}
 	if err := h.Store.UpdatePassword(r.Context(), u.ID, string(hash)); err != nil {
-		writeError(w, http.StatusInternalServerError, "server error")
+		serverError(w, r, err)
 		return
 	}
 	if c, err := r.Cookie(userCookie); err == nil {

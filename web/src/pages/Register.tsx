@@ -1,14 +1,14 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { auth } from "../api";
-import { ErrorPanel, Message, TextField, useSubmit } from "../ui";
+import { Message, TextField, useSubmit } from "../ui";
 
 export default function Register() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [done, setDone] = useState<string | null>(null);
-  const { onSubmit, busy, error } = useSubmit(async () => {
+  const { onSubmit, busy } = useSubmit(async () => {
     const r = await auth.register(email, name, password);
     setDone(r.message);
   });
@@ -18,7 +18,6 @@ export default function Register() {
   return (
     <>
       <span className="card-title">Create account</span>
-      <ErrorPanel message={error} />
       <form onSubmit={onSubmit}>
         <TextField label="Name" type="text" value={name} onChange={setName} />
         <TextField label="Email" type="email" value={email} onChange={setEmail} />

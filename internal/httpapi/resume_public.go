@@ -57,17 +57,17 @@ func (h *handlers) publicResume(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusNotFound, "resume not found")
 		return
 	case err != nil:
-		writeError(w, http.StatusInternalServerError, "server error")
+		serverError(w, r, err)
 		return
 	}
 	owner, err := h.Store.GetUser(r.Context(), res.UserID)
 	if err != nil {
-		writeError(w, http.StatusInternalServerError, "server error")
+		serverError(w, r, err)
 		return
 	}
 	full, err := h.loadFull(r, res, owner.Name)
 	if err != nil {
-		writeError(w, http.StatusInternalServerError, "server error")
+		serverError(w, r, err)
 		return
 	}
 	lang := r.URL.Query().Get("lang")
