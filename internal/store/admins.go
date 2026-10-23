@@ -32,3 +32,9 @@ func (s *Store) AdminByEmail(ctx context.Context, email string) (*Admin, error) 
 	}
 	return &a, nil
 }
+
+func (s *Store) UpdateAdminPassword(ctx context.Context, id int64, passwordHash string) error {
+	_, err := s.db.ExecContext(ctx, `
+		UPDATE admins SET password_hash = $2 WHERE id = $1`, id, passwordHash)
+	return err
+}

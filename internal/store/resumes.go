@@ -32,6 +32,15 @@ type Resume struct {
 	UpdatedAt   time.Time `json:"updated_at"`
 }
 
+type AdminResume struct {
+	UserID    int64     `json:"user_id"`
+	Email     string    `json:"email"`
+	Name      string    `json:"name"`
+	Slug      string    `json:"slug"`
+	Published bool      `json:"published"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
 const resumeCols = `user_id, slug, published, default_lang, title, title_en, subtitle, subtitle_en,
 	about, about_en, email, phone, location, linkedin, photo IS NOT NULL, updated_at,
 	side_bg, side_text, main_bg, main_text, accent`
@@ -110,4 +119,32 @@ func (s *Store) ResumePhotoByUser(ctx context.Context, userID int64) ([]byte, st
 		return nil, "", translate(err)
 	}
 	return data, ct.String, nil
+}
+
+
+func (s *Store) ListResumesForAdmin(ctx context.Context) ([]AdminResume, error) {
+	rows, err := s.db.QueryContext(ctx, `
+		SELECT r.user_id, u.email, u.name, r.slug, r.published, r.updated_at
+		FROM resumes r JOIN users u ON u.id = r.user_id ORDER BY r.updated_at DESC`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	out := []AdminResume{}
+	for rows.Next() {
+		var x AdminResume
+		if err := rows.Scan(&x.UserID, &x.Email, &x.Name, &x.Slug, &x.Published, &x.UpdatedAt); err != nil {
+			return nil, err
+		}
+		out = append(out, x)
+	}
+	return out, rows.Err()
+}
+
+func (s *Store) SetResumePublished(ctx context.Context, userID int64, published bool) error {
+	res, err := s.db.ExecContext(ctx, `UPDATE resumes SET published = $2 WHERE user_id = $1`, userID, published)
+	if err != nil {
+		return err
+	}
+	return rowsAffectedOrNotFound(res)
 }

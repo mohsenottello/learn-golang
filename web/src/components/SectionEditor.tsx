@@ -55,7 +55,7 @@ export default function SectionEditor<T extends { id: number }>(p: Props<T>) {
       if ((editing as T).id) await p.onUpdate(editing as T);
       else await p.onCreate(editing as Omit<T, "id" | "position">);
       setEditing(null);
-      toast("Saved")
+      toast("Saved");
     } catch (e) {
       toast((e as Error).message, "error");
     } finally {

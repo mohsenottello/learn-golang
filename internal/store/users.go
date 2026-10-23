@@ -117,3 +117,32 @@ func (s *Store) UpdateUserName(ctx context.Context, userID int64, name string) (
 	return scanUser(s.db.QueryRowContext(ctx,
 		`UPDATE users SET name = $2 WHERE id = $1 RETURNING `+userCols, userID, name))
 }
+
+// AdminUserUpdate is what an admin may change on a user.
+func (s *Store) AdminUpdateUser(ctx context.Context, id int64, email, name string, verified bool) (*User, error) {
+	return scanUser(s.db.QueryRowContext(ctx, `
+		UPDATE users SET email = $2, name = $3, verified = $4,
+			verify_token = CASE WHEN $4 THEN NULL ELSE verify_token END
+		WHERE id = $1 RETURNING `+userCols, id, email, name, verified))
+}
+
+// SearchUsers is the admin listing: optional text filter, newest first.
+func (s *Store) SearchUsers(ctx context.Context, q string) ([]User, error) {
+	rows, err := s.db.QueryContext(ctx, `
+		SELECT `+userCols+` FROM users
+		WHERE $1 = '' OR email ILIKE '%' || $1 || '%' OR name ILIKE '%' || $1 || '%'
+		ORDER BY id DESC LIMIT 200`, q)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	out := []User{}
+	for rows.Next() {
+		u, err := scanUser(rows)
+		if err != nil {
+			return nil, err
+		}
+		out = append(out, *u)
+	}
+	return out, rows.Err()
+}

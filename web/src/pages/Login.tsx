@@ -17,7 +17,7 @@ export default function Login() {
   return (
     <>
       <span className="card-title">Log in</span>
-      <form onSubmit={onSubmit}>
+      <form onSubmit={onSubmit} className="section">
         <TextField label="Email" type="email" value={email} onChange={setEmail} />
         <TextField label="Password" type="password" value={password} onChange={setPassword} />
         <button className="btn teal waves-effect waves-light" type="submit" disabled={busy}>

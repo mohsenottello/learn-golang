@@ -165,7 +165,7 @@ function ProfileEditor({ data, onChange }: { data: FullResume; onChange: (d: Ful
       const r = await api.save(header);
       setHeader(r);
       onChange({ ...data, resume: r });
-      toast("Profile saved successfully.", "success");
+      toast("Profile saved successfully.");
     } catch (e) { toast((e as Error).message, "error"); }
   }
 

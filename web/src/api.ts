@@ -1,5 +1,7 @@
 export type User = { id: number; email: string; name: string; verified: boolean; created_at: string };
 export type Admin = { id: number; email: string; created_at: string };
+export type AdminResume = { user_id: number; email: string; name: string; slug: string; published: boolean; updated_at: string };
+
 type Msg = { message: string };
 
 export class ApiError extends Error {
@@ -42,8 +44,14 @@ export const admin = {
   login: (email: string, password: string) => post<Admin>("/api/admin/login", { email, password }),
   logout: () => post<void>("/api/admin/logout", {}),
   me: () => get<Admin>("/api/admin/me"),
-  listUsers: () => get<User[]>("/api/admin/users"),
+  listUsers: (q = "") => get<User[]>(`/api/admin/users?q=${encodeURIComponent(q)}`),
+  updateUser: (u: Pick<User, "id" | "email" | "name" | "verified">) =>
+    put<User>(`/api/admin/users/${u.id}`, { email: u.email, name: u.name, verified: u.verified }),
   deleteUser: (id: number) => del<void>(`/api/admin/users/${id}`),
+  listResumes: () => get<AdminResume[]>("/api/admin/resumes"),
+  setPublished: (userId: number, published: boolean) => put<void>(`/api/admin/resumes/${userId}/published`, { published }),
+  changePassword: (current_password: string, new_password: string) => put<Msg>("/api/admin/password", { current_password, new_password }),
+  setUserPassword: (id: number, new_password: string) => put<void>(`/api/admin/users/${id}/password`, { new_password }),
 };
 
 // ---------- resume ----------

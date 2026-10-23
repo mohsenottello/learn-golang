@@ -74,9 +74,12 @@ func NewRouter(d Deps) http.Handler {
 	mux.HandleFunc("POST /api/admin/login", h.adminLogin)
 	mux.HandleFunc("POST /api/admin/logout", h.adminLogout)
 	mux.Handle("GET /api/admin/me", admin(h.adminMe))
-	mux.Handle("GET /api/admin/users", admin(h.listUsers))
-	mux.Handle("GET /api/admin/users/{id}", admin(h.getUser))
+	mux.Handle("GET /api/admin/users", admin(h.adminListUsers)) // replaces listUsers
+	mux.Handle("PUT /api/admin/users/{id}", admin(h.adminUpdateUser))
 	mux.Handle("DELETE /api/admin/users/{id}", admin(h.deleteUser))
+	mux.Handle("GET /api/admin/resumes", admin(h.adminListResumes))
+	mux.Handle("PUT /api/admin/resumes/{id}/published", admin(h.adminSetPublished))
+	mux.Handle("PUT /api/admin/password", admin(h.adminChangePassword))
 
 	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("ok"))

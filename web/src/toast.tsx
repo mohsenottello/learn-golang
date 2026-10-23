@@ -1,29 +1,11 @@
-import { createContext, ReactNode, useCallback, useContext, useState } from "react";
+import { createContext, ReactNode, useContext } from "react";
 
 type Kind = "success" | "error";
-type Toast = { id: number; text: string; kind: Kind };
+const show = (text: string, kind: Kind = "success") =>
+  M.toast({ html: text, classes: kind === "error" ? "red darken-1" : "teal", displayLength: 3000 });
 
-const Ctx = createContext<(text: string, kind?: Kind) => void>(() => {});
-
+const Ctx = createContext(show);
 export function ToastProvider({ children }: { children: ReactNode }) {
-  const [toasts, setToasts] = useState<Toast[]>([]);
-
-  const show = useCallback((text: string, kind: Kind = "success") => {
-    const id = Date.now() + Math.random();
-    setToasts((t) => [...t, { id, text, kind }]);
-    setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), 3000);
-  }, []);
-
-  return (
-    <Ctx.Provider value={show}>
-      {children}
-      <div className="toasts">
-        {toasts.map((t) => (
-          <div key={t.id} className={`toast-item ${t.kind}`}>{t.text}</div>
-        ))}
-      </div>
-    </Ctx.Provider>
-  );
+  return <Ctx.Provider value={show}>{children}</Ctx.Provider>;
 }
-
 export const useToast = () => useContext(Ctx);
