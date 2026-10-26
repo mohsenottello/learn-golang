@@ -3,11 +3,14 @@ import { useNavigate } from "react-router-dom";
 import { Admin as AdminT, admin } from "../api";
 import AdminUsers from "./AdminUsers";
 import AdminResumes from "./AdminResumes";
+import AdminSite from "./AdminSite";
 
-type Section = "users" | "resumes" | "password";
+type Section = "users" | "resumes" | "site" | "password";
 const SECTIONS: { key: Section; label: string; icon: string }[] = [
   { key: "users", label: "Users", icon: "people" },
   { key: "resumes", label: "Resumes", icon: "description" },
+  { key: "site", label: "Website", icon: "language" },
+  { key: "password", label: "Password", icon: "lock" },
 ];
 
 export default function Admin() {
@@ -38,6 +41,7 @@ export default function Admin() {
         </div>
       </aside>
       <section className="editor-main">
+        {section === "site" && <AdminSite />}
         {section === "users" && <AdminUsers />}
         {section === "resumes" && <AdminResumes />}
       </section>

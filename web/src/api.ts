@@ -52,6 +52,23 @@ export const admin = {
   setPublished: (userId: number, published: boolean) => put<void>(`/api/admin/resumes/${userId}/published`, { published }),
   changePassword: (current_password: string, new_password: string) => put<Msg>("/api/admin/password", { current_password, new_password }),
   setUserPassword: (id: number, new_password: string) => put<void>(`/api/admin/users/${id}/password`, { new_password }),
+  updateSite: (s: Site) =>
+  put<Site>("/api/admin/site", { name: s.name, tagline: s.tagline, contact_email: s.contact_email, contact_text: s.contact_text }),
+  uploadLogo: async (file: File) => {
+    const fd = new FormData();
+    fd.append("logo", file);
+    const res = await fetch("/api/admin/site/logo", { method: "PUT", body: fd, credentials: "same-origin" });
+    if (!res.ok) throw new ApiError(res.status, (await res.json().catch(() => ({}))).error ?? "Upload failed");
+  },
+};
+
+export type Site = {
+  name: string; tagline: string; contact_email: string; contact_text: string;
+  has_logo: boolean; updated_at?: string;
+};
+
+export const site = {
+  get: () => get<Site>("/api/site"),
 };
 
 // ---------- resume ----------
