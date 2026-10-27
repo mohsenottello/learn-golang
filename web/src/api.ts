@@ -1,14 +1,26 @@
 export type User = { id: number; email: string; name: string; verified: boolean; created_at: string };
 export type Admin = { id: number; email: string; created_at: string };
 export type AdminResume = { user_id: number; email: string; name: string; slug: string; published: boolean; updated_at: string };
-
-type Msg = { message: string };
-
+export type Feature = { icon: string; color: "teal" | "purple" | "pink" | "blue"; title: string; text: string };
+export type HomeContent = {
+  greeting: string; headline: string; description: string; primary_label: string; secondary_label: string;
+  note: string; floating_note: string; featured_slug: string;
+  features_label: string; features_heading: string; features_intro: string; features: Feature[];
+  about_label: string; about_heading: string; about_text: string; about_button: string;
+  cta_heading: string; cta_text: string; cta_button: string; footer_text: string;
+};
 export class ApiError extends Error {
   constructor(public status: number, message: string) {
     super(message);
   }
 }
+
+export type Site = {
+  name: string; tagline: string; contact_email: string; contact_text: string; primary_color: string;
+  has_logo: boolean; has_portrait: boolean; home: HomeContent; updated_at?: string;
+};
+
+type Msg = { message: string };
 
 async function request<T>(path: string, method: "GET" | "POST" | "PUT" | "DELETE", body?: unknown): Promise<T> {
   const res = await fetch(path, {
@@ -53,19 +65,19 @@ export const admin = {
   changePassword: (current_password: string, new_password: string) => put<Msg>("/api/admin/password", { current_password, new_password }),
   setUserPassword: (id: number, new_password: string) => put<void>(`/api/admin/users/${id}/password`, { new_password }),
   updateSite: (s: Site) =>
-  put<Site>("/api/admin/site", { name: s.name, tagline: s.tagline, contact_email: s.contact_email, contact_text: s.contact_text }),
-  uploadLogo: async (file: File) => {
-    const fd = new FormData();
-    fd.append("logo", file);
-    const res = await fetch("/api/admin/site/logo", { method: "PUT", body: fd, credentials: "same-origin" });
-    if (!res.ok) throw new ApiError(res.status, (await res.json().catch(() => ({}))).error ?? "Upload failed");
-  },
+  put<Site>("/api/admin/site", { name: s.name, tagline: s.tagline, contact_email: s.contact_email, contact_text: s.contact_text, primary_color: s.primary_color }),
+     uploadLogo: (file: File) => uploadImage("/api/admin/site/logo", "logo", file),
+  updateHome: (h: HomeContent) => put<Site>("/api/admin/site/home", h),
+  resetHome: () => put<Site>("/api/admin/site/home", {}),
+  uploadPortrait: (file: File) => uploadImage("/api/admin/site/portrait", "portrait", file),
 };
 
-export type Site = {
-  name: string; tagline: string; contact_email: string; contact_text: string;
-  has_logo: boolean; updated_at?: string;
-};
+async function uploadImage(url: string, field: string, file: File) {
+  const fd = new FormData();
+  fd.append(field, file);
+  const res = await fetch(url, { method: "PUT", body: fd, credentials: "same-origin" });
+  if (!res.ok) throw new ApiError(res.status, (await res.json().catch(() => ({}))).error ?? "Upload failed");
+}
 
 export const site = {
   get: () => get<Site>("/api/site"),

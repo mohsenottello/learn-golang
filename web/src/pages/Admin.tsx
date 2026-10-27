@@ -4,9 +4,11 @@ import { Admin as AdminT, admin } from "../api";
 import AdminUsers from "./AdminUsers";
 import AdminResumes from "./AdminResumes";
 import AdminSite from "./AdminSite";
+import AdminHome from "./AdminHome";
 
-type Section = "users" | "resumes" | "site" | "password";
+type Section = "home" | "users" | "resumes" | "site" | "password";
 const SECTIONS: { key: Section; label: string; icon: string }[] = [
+  { key: "home", label: "Home page", icon: "home" },
   { key: "users", label: "Users", icon: "people" },
   { key: "resumes", label: "Resumes", icon: "description" },
   { key: "site", label: "Website", icon: "language" },
@@ -41,6 +43,7 @@ export default function Admin() {
         </div>
       </aside>
       <section className="editor-main">
+        {section === "home" && <AdminHome />}
         {section === "site" && <AdminSite />}
         {section === "users" && <AdminUsers />}
         {section === "resumes" && <AdminResumes />}

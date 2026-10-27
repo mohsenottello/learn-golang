@@ -1,7 +1,9 @@
-import { ReactNode } from "react";
+import { ReactNode, useEffect } from "react";
 import { Link, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "./auth";
 import { useSite } from "./site";
+import { admin } from "./api";
+import Home from "./pages/Home";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
 import Verify from "./pages/Verify";
@@ -12,16 +14,38 @@ import AdminLogin from "./pages/AdminLogin";
 import PublicResume from "./pages/PublicResume";
 import Admin from "./pages/Admin";
 import Contact from "./pages/Contact";
-import { admin } from "./api";
 
 const appPaths = ["/", "/register", "/login", "/verify", "/forgot-password", "/reset-password", "/account", "/contact", "/admin/login", "/admin"];
+
+type NavLink = { to: string; label: string; onClick?: () => void; cta?: boolean };
 
 export default function App() {
   const { pathname } = useLocation();
   const { user, logout } = useAuth();
-  const { site, logoVersion } = useSite();          // ← inside the component
+  const { site, logoVersion } = useSite();
   const navigate = useNavigate();
   const isAdminArea = pathname.startsWith("/admin");
+  const resumeHref = `/${site.home.featured_slug}`;
+
+  // Materialize's mobile drawer needs a one-time init after the DOM exists.
+  useEffect(() => { M.Sidenav.init(document.querySelectorAll(".sidenav")); }, []);
+
+  const userLogout = () => logout().finally(() => navigate("/login"));
+  const adminLogout = () => admin.logout().finally(() => navigate("/admin/login"));
+
+  const links: NavLink[] = isAdminArea
+    ? (pathname === "/admin" ? [{ to: "#", label: "Log out", onClick: adminLogout }] : [])
+    : user
+      ? [
+          { to: "/", label: "Home" }, { to: resumeHref, label: "My Resume" },
+          { to: "/account", label: "My editor" }, { to: "/contact", label: "Contact" },
+          { to: "#", label: "Log out", onClick: userLogout },
+        ]
+      : [
+          { to: "/", label: "Home" }, { to: resumeHref, label: "My Resume" },
+          { to: "/contact", label: "Contact" }, { to: "/login", label: "Login" },
+          { to: "/register", label: "Get Started", cta: true },
+        ];
 
   if (!appPaths.includes(pathname)) {
     return (
@@ -32,38 +56,35 @@ export default function App() {
     );
   }
 
+  const renderLink = (l: NavLink) => (
+    <li key={l.label}>
+      {l.onClick
+        ? <a href={l.to} onClick={(e) => { e.preventDefault(); l.onClick!(); }}>{l.label}</a>
+        : <Link to={l.to} className={l.cta ? "nav-cta" : undefined}>{l.label}</Link>}
+    </li>
+  );
+
   return (
     <>
-      <nav className="teal">
+      <nav aria-label="Main navigation">
         <div className="nav-wrapper container">
-          <Link to={isAdminArea ? "/admin" : "/"} className="brand-logo" style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            {site.has_logo && <img src={`/api/site/logo?v=${logoVersion}`} alt="" style={{ height: 36 }} />}
+          <Link to={isAdminArea ? "/admin" : "/"} className="brand-logo">
+            {site.has_logo
+              ? <img src={`/api/site/logo?v=${logoVersion}`} alt="" style={{ height: 36, verticalAlign: "middle", marginRight: 8 }} />
+              : <i className="material-icons">spa</i>}
             {site.name}
           </Link>
-          <ul className="right">
-            {isAdminArea ? (
-              pathname === "/admin"
-                ? <li><a href="#logout" onClick={(e) => { e.preventDefault(); admin.logout().finally(() => navigate("/admin/login")); }}>Log out</a></li>
-                : null
-            ) : user ? (
-              <>
-                <li><Link to="/account">My resume</Link></li>
-                <li><Link to="/contact">Contact</Link></li>
-                <li><a href="#logout" onClick={(e) => { e.preventDefault(); logout().finally(() => navigate("/login")); }}>Log out</a></li>
-              </>
-            ) : (
-              <>
-                <li><Link to="/login">Login</Link></li>
-                <li><Link to="/register">Register</Link></li>
-                <li><Link to="/contact">Contact</Link></li>
-              </>
-            )}
-          </ul>
+          <a href="#" data-target="mobile-menu" className="sidenav-trigger right" aria-label="Open navigation menu">
+            <i className="material-icons" style={{ color: "#18223c" }}>menu</i>
+          </a>
+          <ul className="right hide-on-med-and-down">{links.map(renderLink)}</ul>
         </div>
       </nav>
-      <main className="editor-shell">
+      <ul className="sidenav" id="mobile-menu">{links.map(renderLink)}</ul>
+
+      <main className={pathname === "/" ? undefined : "editor-shell"}>
         <Routes>
-          <Route path="/" element={user ? <Account /> : <Card><Login /></Card>} />
+          <Route path="/" element={<Home />} />
           <Route path="/register" element={<Card><Register /></Card>} />
           <Route path="/login" element={<Card><Login /></Card>} />
           <Route path="/verify" element={<Card><Verify /></Card>} />
