@@ -15,6 +15,7 @@ type Site struct {
 	ContactEmail string      `json:"contact_email"`
 	ContactText  string      `json:"contact_text"`
 	PrimaryColor string      `json:"primary_color"`
+	Registration bool        `json:"registration"`
 	HasLogo      bool        `json:"has_logo"`
 	HasPortrait  bool        `json:"has_portrait"`
 	Home         HomeContent `json:"home"`
@@ -54,26 +55,26 @@ type HomeContent struct {
 // DefaultHome is used when nothing has been saved yet (and as the "reset" target).
 func DefaultHome() HomeContent {
 	return HomeContent{
-		Greeting: "Hello, I'm", Headline: "Elahe Roshandel",
-		Description:  "Welcome to my personal space! Here, I share my professional journey, experience, and skills. You can also create your own professional resume and share it with the world.",
-		PrimaryLabel: "View My Resume", SecondaryLabel: "Create Your Resume",
-		Note: "Your story deserves a professional presentation.", FloatingNote: "Your future, your story.",
-		FeaturedSlug:  "resume",
-		FeaturesLabel: "What You Can Do", FeaturesHeading: "Create and Share Your Resume",
-		FeaturesIntro: "Whether you're looking for a new job, exploring better opportunities, or showcasing your skills, this is a great place to start.",
-		Features: []Feature{
-			{"description", "teal", "Create Your Resume", "Build a professional resume with a simple, guided process."},
-			{"edit", "purple", "Make It Yours", "Personalize your experience, education, skills, and presentation."},
-			{"share", "pink", "Share with Confidence", "Share your resume with recruiters, employers, and colleagues."},
-			{"star_outline", "blue", "Stand Out", "Present your professional background in a clean, polished format."},
-		},
-		AboutLabel: "My Resume", AboutHeading: "Get to Know Me",
-		AboutText:   "Curious about my professional journey? Visit my resume to learn more about my background, experience, education, and skills.",
-		AboutButton: "Explore My Resume",
-		CTAHeading:  "Your Next Opportunity Starts Here",
-		CTAText:     "Create a resume that reflects your skills, experience, and ambitions. Make it yours and share your story with confidence.",
-		CTAButton:   "Create Your Resume",
-		FooterText:  "My personal portfolio and a place to create and share your professional resume.",
+		Greeting:        "Greeting",
+		Headline:        "Headline",
+		Description:     "Description",
+		PrimaryLabel:    "PrimaryLabel",
+		SecondaryLabel:  "SecondaryLabel",
+		Note:            "Note",
+		FloatingNote:    "FloatingNote",
+		FeaturedSlug:    "FeaturedSlug",
+		FeaturesLabel:   "FeaturesLabel",
+		FeaturesHeading: "FeaturesHeading",
+		FeaturesIntro:   "FeaturesIntro",
+		Features:        []Feature{},
+		AboutLabel:      "AboutLabel",
+		AboutHeading:    "AboutHeading",
+		AboutText:       "AboutText",
+		AboutButton:     "AboutButton",
+		CTAHeading:      "CTAHeading",
+		CTAText:         "CTAText",
+		CTAButton:       "CTAButton",
+		FooterText:      "FooterText",
 	}
 }
 
@@ -82,10 +83,10 @@ func (s *Store) GetSite(ctx context.Context) (*Site, error) {
 	var home []byte
 	err := s.db.QueryRowContext(ctx, `
 		SELECT name, tagline, contact_email, contact_text, primary_color,
-		       logo IS NOT NULL, portrait IS NOT NULL, home, updated_at
+		       logo IS NOT NULL, portrait IS NOT NULL, home, registration, updated_at
 		FROM site_settings WHERE id = 1`,
 	).Scan(&x.Name, &x.Tagline, &x.ContactEmail, &x.ContactText, &x.PrimaryColor,
-		&x.HasLogo, &x.HasPortrait, &home, &x.UpdatedAt)
+		&x.HasLogo, &x.HasPortrait, &home, &x.Registration, &x.UpdatedAt)
 	if err != nil {
 		return nil, translate(err)
 	}
@@ -103,9 +104,9 @@ func (s *Store) GetSite(ctx context.Context) (*Site, error) {
 func (s *Store) UpdateSite(ctx context.Context, x *Site) error {
 	_, err := s.db.ExecContext(ctx, `
 		UPDATE site_settings
-		SET name=$1, tagline=$2, contact_email=$3, contact_text=$4, primary_color=$5, updated_at=now()
+		SET name=$1, tagline=$2, contact_email=$3, contact_text=$4, primary_color=$5, registration=$6, updated_at=now()
 		WHERE id = 1`,
-		x.Name, x.Tagline, x.ContactEmail, x.ContactText, x.PrimaryColor)
+		x.Name, x.Tagline, x.ContactEmail, x.ContactText, x.PrimaryColor, x.Registration)
 	return err
 }
 

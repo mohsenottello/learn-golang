@@ -30,6 +30,18 @@ func (h *handlers) userRegister(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, "invalid request")
 		return
 	}
+
+	site, err := h.Store.GetSite(r.Context())
+	if err != nil {
+		serverError(w, r, err)
+		return
+	}
+
+	if !site.Registration {
+		writeError(w, http.StatusForbidden, "Registration is currently closed.")
+		return
+	}
+
 	email := strings.ToLower(strings.TrimSpace(in.Email))
 	name := strings.TrimSpace(in.Name)
 	if !validEmail(email) || name == "" || len(in.Password) < 8 {

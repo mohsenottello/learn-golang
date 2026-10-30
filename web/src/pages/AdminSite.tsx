@@ -51,6 +51,11 @@ export default function AdminSite() {
                 onChange={(e) => set("contact_text")(e.target.value)} />
               <label className="active">Contact text</label>
             </div>
+
+            <label>
+              <input type="checkbox" className="filled-in" checked={form.registration} onChange={(e) => setForm({ ...form, registration: e.target.checked })} />
+              <span>Allow user registration</span>
+            </label>
           </div>
         </div>
         <button className="btn teal" onClick={save}>Save</button>

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { auth } from "../api";
 import { Message, TextField, useSubmit } from "../ui";
+import { useSite } from "../site";
 
 export default function Register() {
   const [name, setName] = useState("");
@@ -14,6 +15,7 @@ export default function Register() {
   });
 
   if (done) return <Message title="Check your email"><p>{done}</p></Message>;
+  if (!useSite().site.registration) return <Message title="Registration disabled"><p>New user registration is currently disabled.</p></Message>;
 
   return (
     <>

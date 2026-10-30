@@ -17,7 +17,7 @@ export class ApiError extends Error {
 
 export type Site = {
   name: string; tagline: string; contact_email: string; contact_text: string; primary_color: string;
-  has_logo: boolean; has_portrait: boolean; home: HomeContent; updated_at?: string;
+  has_logo: boolean; has_portrait: boolean; home: HomeContent; registration: boolean; updated_at?: string;
 };
 
 type Msg = { message: string };
@@ -65,7 +65,7 @@ export const admin = {
   changePassword: (current_password: string, new_password: string) => put<Msg>("/api/admin/password", { current_password, new_password }),
   setUserPassword: (id: number, new_password: string) => put<void>(`/api/admin/users/${id}/password`, { new_password }),
   updateSite: (s: Site) =>
-  put<Site>("/api/admin/site", { name: s.name, tagline: s.tagline, contact_email: s.contact_email, contact_text: s.contact_text, primary_color: s.primary_color }),
+  put<Site>("/api/admin/site", { name: s.name, tagline: s.tagline, contact_email: s.contact_email, contact_text: s.contact_text, primary_color: s.primary_color, registration: s.registration }),
      uploadLogo: (file: File) => uploadImage("/api/admin/site/logo", "logo", file),
   updateHome: (h: HomeContent) => put<Site>("/api/admin/site/home", h),
   resetHome: () => put<Site>("/api/admin/site/home", {}),

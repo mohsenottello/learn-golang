@@ -4,6 +4,7 @@ import { useAuth } from "../auth";
 
 export default function Home() {
   const { site, logoVersion } = useSite();
+  const registration = site.registration;
   const { user } = useAuth();
   const h = site.home;
   const resumeHref = `/${h.featured_slug}`;
@@ -24,7 +25,11 @@ export default function Home() {
                 <Link to={resumeHref} className="btn btn-main">
                   {h.primary_label}<i className="material-icons right">arrow_forward</i>
                 </Link>
-                <Link to={createHref} className="btn-outline">{h.secondary_label}</Link>
+                {h.secondary_label && (
+                  <Link to={createHref} className="btn-outline">
+                    {h.secondary_label}
+                  </Link>
+                )}
               </div>
               {h.note && <p className="hero-note"><i className="material-icons">check_circle_outline</i> {h.note}</p>}
             </div>
@@ -48,24 +53,26 @@ export default function Home() {
       </section>
 
       {/* Features */}
-      <section className="section-padding features-section" id="features">
-        <div className="container center">
-          <div className="section-label">{h.features_label}</div>
-          <h2 className="section-heading">{h.features_heading}</h2>
-          <p className="section-intro">{h.features_intro}</p>
-          <div className="row">
-            {h.features.map((f, i) => (
-              <div key={i} className="col s12 m6 l3">
-                <article className="feature-card">
-                  <div className={`feature-icon icon-${f.color}`}><i className="material-icons">{f.icon}</i></div>
-                  <h5>{f.title}</h5>
-                  <p>{f.text}</p>
-                </article>
-              </div>
-            ))}
+      {registration && (
+        <section className="section-padding features-section" id="features">
+          <div className="container center">
+            <div className="section-label">{h.features_label}</div>
+            <h2 className="section-heading">{h.features_heading}</h2>
+            <p className="section-intro">{h.features_intro}</p>
+            <div className="row">
+              {h.features.map((f, i) => (
+                <div key={i} className="col s12 m6 l3">
+                  <article className="feature-card">
+                    <div className={`feature-icon icon-${f.color}`}><i className="material-icons">{f.icon}</i></div>
+                    <h5>{f.title}</h5>
+                    <p>{f.text}</p>
+                  </article>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* About the resume */}
       <section className="section-padding resume-section" id="about-resume">
@@ -94,6 +101,7 @@ export default function Home() {
               <Link to={resumeHref} className="btn btn-main">
                 {h.about_button}<i className="material-icons right">arrow_forward</i>
               </Link>
+
               <Link to={resumeHref} className="resume-url">
                 <i className="material-icons">link</i>{window.location.host}{resumeHref}
               </Link>
@@ -103,7 +111,8 @@ export default function Home() {
       </section>
 
       {/* Call to action */}
-      <section className="cta-section center">
+      {registration && (
+         <section className="cta-section center">
         <div className="container">
           <i className="material-icons cta-icon">description</i>
           <h2>{h.cta_heading}</h2>
@@ -113,6 +122,7 @@ export default function Home() {
           </Link>
         </div>
       </section>
+      )}
 
       {/* Footer */}
       <footer>
@@ -126,7 +136,9 @@ export default function Home() {
               <div className="footer-links">
                 <Link to="/">Home</Link>
                 <Link to={resumeHref}>My Resume</Link>
-                <Link to={createHref}>Create Resume</Link>
+                {registration && (
+                  <Link to={createHref}>Create Resume</Link>
+                )}
                 <Link to="/contact">Contact</Link>
               </div>
             </div>

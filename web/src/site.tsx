@@ -11,7 +11,7 @@ const EMPTY_HOME: HomeContent = {
 
 const FALLBACK: Site = {
   name: "MyApp", tagline: "", contact_email: "", contact_text: "", primary_color: "#4f46e5",
-  has_logo: false, has_portrait: false, home: EMPTY_HOME,
+  has_logo: false, has_portrait: false, home: EMPTY_HOME, registration: false,
 };
 
 type SiteState = { site: Site; refresh: () => Promise<void>; logoVersion: number };

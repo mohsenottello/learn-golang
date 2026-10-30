@@ -23,6 +23,7 @@ export default function App() {
   const { pathname } = useLocation();
   const { user, logout } = useAuth();
   const { site, logoVersion } = useSite();
+  const registration = site.registration;
   const navigate = useNavigate();
   const isAdminArea = pathname.startsWith("/admin");
   const resumeHref = `/${site.home.featured_slug}`;
@@ -33,20 +34,35 @@ export default function App() {
   const userLogout = () => logout().finally(() => navigate("/login"));
   const adminLogout = () => admin.logout().finally(() => navigate("/admin/login"));
 
-  const links: NavLink[] = isAdminArea
-    ? (pathname === "/admin" ? [{ to: "#", label: "Log out", onClick: adminLogout }] : [])
-    : user
-      ? [
-          { to: "/", label: "Home" }, { to: resumeHref, label: "My Resume" },
-          { to: "/account", label: "My editor" }, { to: "/contact", label: "Contact" },
-          { to: "#", label: "Log out", onClick: userLogout },
-        ]
-      : [
-          { to: "/", label: "Home" }, { to: resumeHref, label: "My Resume" },
-          { to: "/contact", label: "Contact" }, { to: "/login", label: "Login" },
-          { to: "/register", label: "Get Started", cta: true },
-        ];
+  const links: NavLink[] = [];
 
+  if (isAdminArea) {
+    if (pathname === "/admin") {
+      links.push({ to: "#", label: "Log out", onClick: adminLogout });
+    }
+  } else if (!registration) {
+    links.push(
+      { to: "/", label: "Home" },
+      { to: "/contact", label: "Contact" },
+    );
+  } else if (user) {
+    links.push(
+      { to: "/", label: "Home" },
+      { to: resumeHref, label: "My Resume" },
+      { to: "/account", label: "My editor" },
+      { to: "/contact", label: "Contact" },
+      { to: "#", label: "Log out", onClick: userLogout },
+    );
+  } else {
+    links.push(
+      { to: "/", label: "Home" },
+      { to: resumeHref, label: "My Resume" },
+      { to: "/contact", label: "Contact" },
+      { to: "/login", label: "Login" },
+      { to: "/register", label: "Get Started", cta: true },
+    );
+  }
+  console.log("links", links, "registration", registration, "user", user, "isAdminArea", isAdminArea);
   if (!appPaths.includes(pathname)) {
     return (
       <Routes>
