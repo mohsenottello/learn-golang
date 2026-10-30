@@ -44,10 +44,10 @@ func (s *Store) CreateUserSession(ctx context.Context, token string, userID int6
 func (s *Store) UserForSession(ctx context.Context, token string) (*User, error) {
 	var u User
 	err := s.db.QueryRowContext(ctx, `
-		SELECT u.id, u.email, u.name, u.verified, u.created_at
+		SELECT u.id, u.email, u.name, u.verified, u.role, u.created_at
 		FROM user_sessions s JOIN users u ON u.id = s.user_id
 		WHERE s.token = $1 AND s.expires_at > now()`, token,
-	).Scan(&u.ID, &u.Email, &u.Name, &u.Verified, &u.CreatedAt)
+	).Scan(&u.ID, &u.Email, &u.Name, &u.Verified, &u.Role, &u.CreatedAt)
 	if err != nil {
 		return nil, translate(err)
 	}

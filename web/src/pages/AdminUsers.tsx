@@ -3,7 +3,7 @@ import { User, admin } from "../api";
 import { useToast } from "../toast";
 import { TextField, useSubmit } from "../ui";
 import { useModal } from "../components/useModal";
-
+import { useAuth } from "../auth";
 export default function AdminUsers() {
   const [q, setQ] = useState("");
   const [users, setUsers] = useState<User[]>([]);
@@ -12,6 +12,7 @@ export default function AdminUsers() {
   const toast = useToast();
 
   const load = () => admin.listUsers(q).then(setUsers).catch((e) => toast(e.message, "error"));
+  const { user: me } = useAuth()
 
   // Debounced search: wait 300 ms after the last keystroke before querying.
   useEffect(() => {
@@ -50,13 +51,27 @@ export default function AdminUsers() {
 
           <table className="highlight">
             <thead>
-              <tr><th>Name</th><th>Email</th><th>Verified</th><th>Joined</th><th style={{ width: 150 }}>Actions</th></tr>
+              <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Verified</th>
+                <th>Joined</th>
+                <th style={{ width: 150 }}>Actions</th>
+              </tr>
             </thead>
             <tbody>
               {users.map((u) => editing?.id === u.id ? (
                 <tr key={u.id} className="teal lighten-5">
                   <td><input type="text" value={editing.name} onChange={(e) => setEditing({ ...editing, name: e.target.value })} /></td>
                   <td><input type="email" value={editing.email} onChange={(e) => setEditing({ ...editing, email: e.target.value })} /></td>
+                  <td>
+                    <select className="browser-default" value={editing.role} onChange={(e) => setEditing({ ...editing, role: e.target.value as User["role"] })}>
+                      <option value="user">user</option>
+                      <option value="admin">admin</option>
+                      <option value="owner">owner</option>
+                    </select>
+                  </td>
                   <td>
                     <label>
                       <input type="checkbox" className="filled-in" checked={editing.verified}
@@ -74,6 +89,7 @@ export default function AdminUsers() {
                 <tr key={u.id}>
                   <td>{u.name}</td>
                   <td>{u.email}</td>
+                  <td>{u.role}</td>
                   <td>{u.verified
                     ? <i className="material-icons teal-text">check</i>
                     : <i className="material-icons grey-text">hourglass_empty</i>}</td>
@@ -81,7 +97,9 @@ export default function AdminUsers() {
                   <td className="right-align" style={{ whiteSpace: "nowrap" }}>
                     <button className="btn-flat" title="Edit" onClick={() => setEditing({ ...u })}><i className="material-icons">edit</i></button>
                     <button className="btn-flat" title="Set password" onClick={() => setPwUser(u)}><i className="material-icons">key</i></button>
-                    <button className="btn-flat red-text" title="Delete" onClick={() => remove(u)}><i className="material-icons">delete</i></button>
+                    {(u.role !== "owner" || u.id !== me?.id) && (
+                      <button className="btn-flat red-text" title="Delete" onClick={() => remove(u)}><i className="material-icons">delete</i></button>
+                    )}
                   </td>
                 </tr>
               ))}

@@ -10,15 +10,16 @@ type User struct {
 	Email        string    `json:"email"`
 	Name         string    `json:"name"`
 	PasswordHash string    `json:"-"`
+	Role         string    `json:"role"`
 	Verified     bool      `json:"verified"`
 	CreatedAt    time.Time `json:"created_at"`
 }
 
-const userCols = `id, email, name, password_hash, verified, created_at`
+const userCols = `id, email, name, password_hash, role, verified, created_at`
 
 func scanUser(row interface{ Scan(...any) error }) (*User, error) {
 	var u User
-	err := row.Scan(&u.ID, &u.Email, &u.Name, &u.PasswordHash, &u.Verified, &u.CreatedAt)
+	err := row.Scan(&u.ID, &u.Email, &u.Name, &u.PasswordHash, &u.Role, &u.Verified, &u.CreatedAt)
 	if err != nil {
 		return nil, translate(err)
 	}
@@ -111,6 +112,11 @@ func (s *Store) DeleteUser(ctx context.Context, id int64) error {
 	return nil
 }
 
+func (s *Store) SetRole(ctx context.Context, id int64, role string) (*User, error) {
+	return scanUser(s.db.QueryRowContext(ctx, `
+		UPDATE users SET role = $2 WHERE id = $1 RETURNING `+userCols, id, role))
+}
+
 // --- account settings ---
 
 func (s *Store) UpdateUserName(ctx context.Context, userID int64, name string) (*User, error) {
@@ -119,11 +125,11 @@ func (s *Store) UpdateUserName(ctx context.Context, userID int64, name string) (
 }
 
 // AdminUserUpdate is what an admin may change on a user.
-func (s *Store) AdminUpdateUser(ctx context.Context, id int64, email, name string, verified bool) (*User, error) {
+func (s *Store) AdminUpdateUser(ctx context.Context, id int64, email, name string, verified bool, role string) (*User, error) {
 	return scanUser(s.db.QueryRowContext(ctx, `
-		UPDATE users SET email = $2, name = $3, verified = $4,
-			verify_token = CASE WHEN $4 THEN NULL ELSE verify_token END
-		WHERE id = $1 RETURNING `+userCols, id, email, name, verified))
+		UPDATE users SET email = $2, name = $3, verified = $4, role = $5,
+    verify_token = CASE WHEN $4 THEN NULL ELSE verify_token END
+		WHERE id = $1 RETURNING `+userCols, id, email, name, verified, role))
 }
 
 // SearchUsers is the admin listing: optional text filter, newest first.

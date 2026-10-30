@@ -20,9 +20,8 @@ const (
 )
 
 const (
-	adminCookie = "admin_session"
-	userCookie  = "user_session"
-	sessionTTL  = 7 * 24 * time.Hour
+	userCookie = "user_session"
+	sessionTTL = 7 * 24 * time.Hour
 )
 
 func (h *handlers) setSessionCookie(w http.ResponseWriter, name, token string, expires time.Time) {
@@ -43,17 +42,23 @@ func clearCookie(w http.ResponseWriter, name string) {
 
 func (h *handlers) requireAdmin(next http.HandlerFunc) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		c, err := r.Cookie(adminCookie)
+		c, err := r.Cookie(userCookie)
 		if err != nil {
 			writeError(w, http.StatusUnauthorized, "not logged in")
 			return
 		}
-		admin, err := h.Store.AdminForSession(r.Context(), c.Value)
+		user, err := h.Store.UserForSession(r.Context(), c.Value)
 		if err != nil {
 			writeError(w, http.StatusUnauthorized, "not logged in")
 			return
 		}
-		next(w, r.WithContext(context.WithValue(r.Context(), adminKey, admin)))
+
+		if user.Role == "user" {
+			writeError(w, http.StatusForbidden, "not authorized")
+			return
+		}
+
+		next(w, r.WithContext(context.WithValue(r.Context(), userKey, user)))
 	})
 }
 

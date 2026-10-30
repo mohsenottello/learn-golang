@@ -176,3 +176,9 @@ func (h *handlers) adminUploadPortrait(w http.ResponseWriter, r *http.Request) {
 	}
 	w.WriteHeader(http.StatusNoContent)
 }
+
+// GET /api/admin/site — the full settings for the admin panel.
+func (h *handlers) adminGetSite(w http.ResponseWriter, r *http.Request) {
+	site, err := h.Store.GetSite(r.Context())
+	h.writeItemResult(w, r, site, err)
+}

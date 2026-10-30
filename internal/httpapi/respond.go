@@ -33,5 +33,5 @@ func readJSON(w http.ResponseWriter, r *http.Request, v any) error {
 // serverError logs the real cause and sends a generic 500 to the client.
 func serverError(w http.ResponseWriter, r *http.Request, err error) {
 	log.Printf("500 %s %s: %v", r.Method, r.URL.Path, err)
-	serverError(w, r, err)
+	writeError(w, http.StatusInternalServerError, "server error") // not serverError(...)
 }

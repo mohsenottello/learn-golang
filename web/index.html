@@ -154,25 +154,29 @@
     /* ========== app pages (editor, admin) ========== */
     .editor-shell { padding: 0; }
     .editor { display: flex; min-height: calc(100vh - 76px); }
-    .editor-side { width: 18%; min-width: 180px; max-width: 280px; flex: none; background: #fff; border-right: 1px solid #e0e0e0;
-                   position: sticky; top: 76px; height: calc(100vh - 76px); display: flex; flex-direction: column; }
-    .editor-side-name { padding: 1.25rem 1.25rem .75rem; font-weight: 600; color: #444; border-bottom: 1px solid #eee; line-height: 1.4; }
-    .editor-nav { display: flex; align-items: center; gap: .75rem; padding: .8rem 1.25rem; color: #555; line-height: 1.4; }
-    .editor-nav .material-icons { font-size: 20px; color: #888; }
-    .editor-nav:hover { background: #f5f5f5; }
+    .editor-side { width: 240px; flex: none; background: #fff; border-right: 1px solid #e6e8f0; position: sticky; top: 76px;
+                  height: calc(100vh - 76px); display: flex; flex-direction: column; overflow-y: auto; transition: width .2s ease; }
+    .editor-side.collapsed { width: 64px; }
+    .editor-side-head { display: flex; align-items: center; justify-content: space-between; padding: .5rem .5rem .5rem 1.25rem; border-bottom: 1px solid #eee; min-height: 56px; }
+    .editor-side.collapsed .editor-side-head { justify-content: center; padding: .5rem; }
+    .editor-side-name { font-weight: 600; color: #444; line-height: 1.3; font-size: .9rem; }
+    .editor-collapse { padding: 0 6px; min-width: 0; height: 36px; line-height: 36px; }
+    .editor-collapse .material-icons { color: #888; }
+    .editor-group { display: flex; width: 100%; align-items: center; justify-content: space-between; background: none; border: 0; cursor: pointer;
+                    padding: .9rem 1.25rem .3rem; font: inherit; font-size: .7rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: #999; }
+    .editor-group .material-icons { font-size: 18px; }
+    .editor-nav { display: flex; align-items: center; gap: .75rem; padding: .7rem 1.25rem; color: #555; line-height: 1.4; font-size: .9rem; white-space: nowrap; }
+    .editor-side.collapsed .editor-nav { justify-content: center; padding: .7rem 0; }
+    .editor-nav .material-icons { font-size: 20px; color: #888; flex: none; }
+    .editor-nav:hover { background: #f5f5f7; }
     .editor-nav.active { background: var(--lavender); color: var(--primary-dark); border-right: 3px solid var(--primary); }
     .editor-nav.active .material-icons { color: var(--primary-dark); }
-    .editor-side-foot { margin-top: auto; padding: 1rem 1.25rem; font-size: .85rem; color: #666; border-top: 1px solid #eee; line-height: 1.4; }
-    .editor-main { flex: 1; padding: 1.5rem 3%; }
-    .input-field label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
-    .btn.teal { background: var(--primary) !important; }
-    .btn.teal:hover { background: var(--primary-dark) !important; }
-    .teal-text { color: var(--primary) !important; }
+    .editor-side-foot { margin-top: auto; padding: 1rem 1.25rem; font-size: .85rem; color: #666; border-top: 1px solid #eee; }
+    .editor-main { flex: 1; padding: 1.5rem 3%; min-width: 0; }
     @media (max-width: 720px) {
       .editor { flex-direction: column; }
-      .editor-side { width: auto; max-width: none; position: static; height: auto; flex-direction: row; flex-wrap: wrap; }
-      .editor-side-name, .editor-side-foot { width: 100%; }
-      .editor-main { padding: 1rem; }
+      .editor-side, .editor-side.collapsed { width: auto; position: static; height: auto; }
+      .editor-collapse { display: none; }
     }
 
     /* theme preview (resume colours) */

@@ -16,25 +16,19 @@ type Admin struct {
 // Used to seed the first admin from configuration; safe to call on every start.
 func (s *Store) EnsureAdmin(ctx context.Context, email, passwordHash string) error {
 	_, err := s.db.ExecContext(ctx, `
-		INSERT INTO admins (email, password_hash, verified)
-		VALUES ($1, $2, TRUE)
-		ON CONFLICT (email) DO NOTHING`, email, passwordHash)
+		INSERT INTO users (email, password_hash, verified, role, name)
+		VALUES ($1, $2, TRUE, 'owner', $3)
+		ON CONFLICT (email) DO NOTHING`, email, passwordHash, "Admin")
 	return err
 }
 
 func (s *Store) AdminByEmail(ctx context.Context, email string) (*Admin, error) {
 	var a Admin
 	err := s.db.QueryRowContext(ctx,
-		`SELECT id, email, password_hash, created_at FROM admins WHERE email = $1 AND verified`, email,
+		`SELECT id, email, password_hash, created_at FROM admins WHERE email = $1 AND (role = 'admin' or role = 'owner')`, email,
 	).Scan(&a.ID, &a.Email, &a.PasswordHash, &a.CreatedAt)
 	if err != nil {
 		return nil, translate(err)
 	}
 	return &a, nil
-}
-
-func (s *Store) UpdateAdminPassword(ctx context.Context, id int64, passwordHash string) error {
-	_, err := s.db.ExecContext(ctx, `
-		UPDATE admins SET password_hash = $2 WHERE id = $1`, id, passwordHash)
-	return err
 }

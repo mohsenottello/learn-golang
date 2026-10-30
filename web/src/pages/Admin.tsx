@@ -1,52 +1,71 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Admin as AdminT, admin } from "../api";
+import { useAuth } from "../auth";
+import SideNav, { NavGroup } from "../components/SideNav";
+import ResumeEditor, { RESUME_SECTIONS, ResumeSection, isResumeSection } from "../components/ResumeEditor";
 import AdminUsers from "./AdminUsers";
 import AdminResumes from "./AdminResumes";
 import AdminSite from "./AdminSite";
 import AdminHome from "./AdminHome";
 
-type Section = "home" | "users" | "resumes" | "site" | "password";
-const SECTIONS: { key: Section; label: string; icon: string }[] = [
+
+type AdminSection = "home" | "users" | "resumes" | "site";
+type Section = ResumeSection | AdminSection;
+
+const ADMIN_SECTIONS: { key: AdminSection; label: string; icon: string }[] = [
   { key: "home", label: "Home page", icon: "home" },
   { key: "users", label: "Users", icon: "people" },
   { key: "resumes", label: "Resumes", icon: "description" },
   { key: "site", label: "Website", icon: "language" },
-  { key: "password", label: "Password", icon: "lock" },
 ];
 
 export default function Admin() {
-  const [me, setMe] = useState<AdminT | null>(null);
-  const [section, setSection] = useState<Section>("users");
+  const { user, loading, logout } = useAuth();
   const navigate = useNavigate();
-
+  const isOwner = user?.role === "owner";
+  const [section, setSection] = useState<Section>(isOwner ? "profile" : "users");
+  const groups: NavGroup<Section>[] = isOwner
+    ? [{ title: "My resume", items: RESUME_SECTIONS }, { title: "Site", items: ADMIN_SECTIONS }]
+    : [{ items: ADMIN_SECTIONS }];
+  // Only admins and owners belong here; plain users go to their editor, visitors to login.
   useEffect(() => {
-    admin.me().then(setMe).catch(() => navigate("/admin/login"));
-  }, [navigate]);
+    if (loading) return;
+    if (!user || user.role === "user") navigate(user ? "/account" : "/login");
+  }, [loading, user, navigate]);
 
-  if (!me) return <p>Loading…</p>;
+  // Owners start on their resume; the role may arrive after the first render.
+  useEffect(() => { if (isOwner) setSection("profile"); }, [isOwner]);
+
+  if (loading || !user || user.role === "user") return <p>Loading…</p>;
+
+  const navItem = (s: { key: Section; label: string; icon: string }) => (
+    <a key={s.key} href={`#${s.key}`} onClick={(e) => { e.preventDefault(); setSection(s.key); }}
+      className={`editor-nav${section === s.key ? " active" : ""}`}>
+      <i className="material-icons">{s.icon}</i>{s.label}
+    </a>
+  );
 
   return (
     <div className="editor">
-      <aside className="editor-side">
-        <div className="editor-side-name">Admin<br /><small className="grey-text">{me.email}</small></div>
-        {SECTIONS.map((s) => (
-          <a key={s.key} href={`#${s.key}`} onClick={(e) => { e.preventDefault(); setSection(s.key); }}
-            className={`editor-nav${section === s.key ? " active" : ""}`}>
-            <i className="material-icons">{s.icon}</i>{s.label}
-          </a>
-        ))}
-        <div className="editor-side-foot">
-          <a href="#logout" onClick={(e) => { e.preventDefault(); admin.logout().then(() => navigate("/admin/login")); }}>
-            Log out
-          </a>
-        </div>
-      </aside>
+      <SideNav
+        header={<>{isOwner ? "Owner" : "Admin"}<br /><small className="grey-text">{user.email}</small></>}
+        groups={groups}
+        active={section}
+        onSelect={setSection}
+        footer={<a href="#logout" onClick={(e) => { e.preventDefault(); logout().finally(() => navigate("/login")); }}>Log out</a>}
+      />
+
       <section className="editor-main">
-        {section === "home" && <AdminHome />}
-        {section === "site" && <AdminSite />}
-        {section === "users" && <AdminUsers />}
-        {section === "resumes" && <AdminResumes />}
+        {isResumeSection(section) ? (
+          <ResumeEditor section={section} />
+        ) : (
+          <>
+            {section === "home" && <AdminHome />}
+            {section === "users" && <AdminUsers />}
+            {section === "resumes" && <AdminResumes />}
+            {section === "site" && <AdminSite />}
+          </>
+        )}
       </section>
     </div>
   );

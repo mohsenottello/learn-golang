@@ -1,4 +1,4 @@
-export type User = { id: number; email: string; name: string; verified: boolean; created_at: string };
+export type User = { id: number; email: string; name: string; verified: boolean; role: string; created_at: string };
 export type Admin = { id: number; email: string; created_at: string };
 export type AdminResume = { user_id: number; email: string; name: string; slug: string; published: boolean; updated_at: string };
 export type Feature = { icon: string; color: "teal" | "purple" | "pink" | "blue"; title: string; text: string };
@@ -57,8 +57,8 @@ export const admin = {
   logout: () => post<void>("/api/admin/logout", {}),
   me: () => get<Admin>("/api/admin/me"),
   listUsers: (q = "") => get<User[]>(`/api/admin/users?q=${encodeURIComponent(q)}`),
-  updateUser: (u: Pick<User, "id" | "email" | "name" | "verified">) =>
-    put<User>(`/api/admin/users/${u.id}`, { email: u.email, name: u.name, verified: u.verified }),
+  updateUser: (u: Pick<User, "id" | "email" | "name" | "verified" | "role">) =>
+    put<User>(`/api/admin/users/${u.id}`, { email: u.email, name: u.name, verified: u.verified, role: u.role }),
   deleteUser: (id: number) => del<void>(`/api/admin/users/${id}`),
   listResumes: () => get<AdminResume[]>("/api/admin/resumes"),
   setPublished: (userId: number, published: boolean) => put<void>(`/api/admin/resumes/${userId}/published`, { published }),

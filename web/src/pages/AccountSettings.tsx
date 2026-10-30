@@ -4,15 +4,15 @@ import { useAuth } from "../auth";
 import { useToast } from "../toast";
 import { TextField, useSubmit } from "../ui";
 
-export default function AccountSettings({ onNameChange }: { onNameChange: (name: string) => void }) {
+export default function AccountSettings() {
   const { user, setUser } = useAuth();
   const toast = useToast();
 
   const [name, setName] = useState(user?.name ?? "");
+
   const nameForm = useSubmit(async () => {
     const u = await auth.updateName(name);
-    setUser(u);
-    onNameChange(u.name);
+    setUser(u);          // sidebar/nav update from the auth context
     toast("Name updated.");
   });
 

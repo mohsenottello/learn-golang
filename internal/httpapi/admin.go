@@ -25,6 +25,7 @@ func (h *handlers) adminUpdateUser(w http.ResponseWriter, r *http.Request) {
 	var in struct {
 		Email    string `json:"email"`
 		Name     string `json:"name"`
+		Role     string `json:"role"`
 		Verified bool   `json:"verified"`
 	}
 	if err := readJSON(w, r, &in); !ok || err != nil {
@@ -37,7 +38,12 @@ func (h *handlers) adminUpdateUser(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, "A valid email and a name are required.")
 		return
 	}
-	u, err := h.Store.AdminUpdateUser(r.Context(), id, in.Email, in.Name, in.Verified)
+	in.Role = strings.ToLower(strings.TrimSpace(in.Role))
+	if in.Role != "user" && in.Role != "admin" && in.Role != "owner" {
+		writeError(w, http.StatusBadRequest, "Role must be one of: user, admin, owner.")
+		return
+	}
+	u, err := h.Store.AdminUpdateUser(r.Context(), id, in.Email, in.Name, in.Verified, in.Role)
 	if errors.Is(err, store.ErrDuplicate) {
 		writeError(w, http.StatusConflict, "Another user already has that email.")
 		return
@@ -62,38 +68,6 @@ func (h *handlers) adminSetPublished(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	h.writeItemResult(w, r, nil, h.Store.SetResumePublished(r.Context(), userID, in.Published))
-}
-
-// PUT /api/admin/password  {current_password, new_password}
-func (h *handlers) adminChangePassword(w http.ResponseWriter, r *http.Request) {
-	var in struct {
-		Current string `json:"current_password"`
-		New     string `json:"new_password"`
-	}
-	if err := readJSON(w, r, &in); err != nil {
-		writeError(w, http.StatusBadRequest, "invalid request")
-		return
-	}
-	if len(in.New) < 8 {
-		writeError(w, http.StatusBadRequest, "New password must be at least 8 characters.")
-		return
-	}
-	me := currentAdmin(r)
-	full, err := h.Store.AdminByEmail(r.Context(), me.Email) // context admin carries no hash
-	if err != nil || bcrypt.CompareHashAndPassword([]byte(full.PasswordHash), []byte(in.Current)) != nil {
-		writeError(w, http.StatusUnauthorized, "Current password is incorrect.")
-		return
-	}
-	hash, err := bcrypt.GenerateFromPassword([]byte(in.New), bcrypt.DefaultCost)
-	if err != nil {
-		serverError(w, r, err)
-		return
-	}
-	if err := h.Store.UpdateAdminPassword(r.Context(), me.ID, string(hash)); err != nil {
-		serverError(w, r, err)
-		return
-	}
-	writeJSON(w, http.StatusOK, map[string]string{"message": "Password updated."})
 }
 
 // PUT /api/admin/users/{id}/password  {new_password}

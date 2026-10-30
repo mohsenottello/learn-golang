@@ -10,7 +10,7 @@ import (
 func TestProtectedRoutesRequireLogin(t *testing.T) {
 	router := NewRouter(Deps{Static: fstest.MapFS{}})
 
-	for _, path := range []string{"/api/auth/me", "/api/admin/me", "/api/admin/users"} {
+	for _, path := range []string{"/api/auth/me", "/api/me/resume", "/api/admin/users", "/api/admin/site"} {
 		req := httptest.NewRequest(http.MethodGet, path, nil)
 		rec := httptest.NewRecorder()
 		router.ServeHTTP(rec, req)

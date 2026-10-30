@@ -92,7 +92,11 @@ func (h *handlers) userVerify(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handlers) userLogin(w http.ResponseWriter, r *http.Request) {
-	var in credentials
+	var in struct {
+		Email    string `json:"email"`
+		Password string `json:"password"`
+	}
+
 	if err := readJSON(w, r, &in); err != nil {
 		writeError(w, http.StatusBadRequest, "invalid request")
 		return

@@ -32,13 +32,12 @@ export default function App() {
   useEffect(() => { M.Sidenav.init(document.querySelectorAll(".sidenav")); }, []);
 
   const userLogout = () => logout().finally(() => navigate("/login"));
-  const adminLogout = () => admin.logout().finally(() => navigate("/admin/login"));
 
   const links: NavLink[] = [];
 
   if (isAdminArea) {
     if (pathname === "/admin") {
-      links.push({ to: "#", label: "Log out", onClick: adminLogout });
+      links.push({ to: "#", label: "Log out", onClick: userLogout });
     }
   } else if (!registration) {
     links.push(
@@ -62,7 +61,7 @@ export default function App() {
       { to: "/register", label: "Get Started", cta: true },
     );
   }
-  console.log("links", links, "registration", registration, "user", user, "isAdminArea", isAdminArea);
+
   if (!appPaths.includes(pathname)) {
     return (
       <Routes>
