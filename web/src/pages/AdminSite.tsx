@@ -1,5 +1,5 @@
-import { ChangeEvent, useState } from "react";
-import { Site, admin } from "../api";
+import { ChangeEvent, useEffect, useState } from "react";
+import { Lang, Site, admin } from "../api";
 import { useSite } from "../site";
 import { useToast } from "../toast";
 import { TextField } from "../ui";
@@ -7,6 +7,7 @@ import { TextField } from "../ui";
 export default function AdminSite() {
   const { site, refresh, logoVersion } = useSite();
   const [form, setForm] = useState<Site>(site);
+  useEffect(() => { setForm(site); }, [site]);
   const toast = useToast();
   const set = (k: keyof Site) => (v: string) => setForm({ ...form, [k]: v });
 
@@ -44,18 +45,38 @@ export default function AdminSite() {
           </div>
           <div className="col s12 m8">
             <TextField label="Site name" type="text" value={form.name} onChange={set("name")} />
-            <TextField label="Tagline" type="text" value={form.tagline} onChange={set("tagline")} />
+            <div className="row" style={{ marginBottom: 0 }}>
+              <div className="col s12 m6"><TextField label="Tagline (DE)" type="text" value={form.tagline} onChange={set("tagline")} /></div>
+              <div className="col s12 m6"><TextField label="Tagline (EN)" type="text" value={form.tagline_en} onChange={set("tagline_en")} /></div>
+            </div>
             <TextField label="Contact email" type="text" value={form.contact_email} onChange={set("contact_email")} />
-            <div className="input-field">
-              <textarea className="materialize-textarea" value={form.contact_text} style={{ minHeight: 120 }}
-                onChange={(e) => set("contact_text")(e.target.value)} />
-              <label className="active">Contact text</label>
+            <div className="row" style={{ marginBottom: 0 }}>
+              <div className="input-field col s12 m6">
+                <textarea className="materialize-textarea" value={form.contact_text} style={{ minHeight: 120 }}
+                  onChange={(e) => set("contact_text")(e.target.value)} />
+                <label className="active">Contact text (DE)</label>
+              </div>
+              <div className="input-field col s12 m6">
+                <textarea className="materialize-textarea" value={form.contact_text_en} style={{ minHeight: 120 }}
+                  onChange={(e) => set("contact_text_en")(e.target.value)} />
+                <label className="active">Contact text (EN)</label>
+              </div>
             </div>
 
-            <label>
-              <input type="checkbox" className="filled-in" checked={form.registration} onChange={(e) => setForm({ ...form, registration: e.target.checked })} />
-              <span>Allow user registration</span>
-            </label>
+            <label>Default language (for visitors whose browser is neither DE nor a saved choice)</label>
+            <select className="browser-default" value={form.default_lang}
+              onChange={(e) => setForm({ ...form, default_lang: e.target.value as Lang })}>
+              <option value="de">Deutsch</option>
+              <option value="en">English</option>
+            </select>
+
+            <p>
+              <label>
+                <input type="checkbox" className="filled-in" checked={form.registration}
+                  onChange={(e) => setForm({ ...form, registration: e.target.checked })} />
+                <span>Allow user registration</span>
+              </label>
+            </p>
           </div>
         </div>
         <button className="btn teal" onClick={save}>Save</button>

@@ -1,7 +1,7 @@
 import { createContext, ReactNode, useCallback, useContext, useEffect, useState } from "react";
 import { HomeContent, Site, site as api } from "./api";
 
-const EMPTY_HOME: HomeContent = {
+export const EMPTY_HOME: HomeContent = {
   greeting: "", headline: "", description: "", primary_label: "", secondary_label: "",
   note: "", floating_note: "", featured_slug: "",
   features_label: "", features_heading: "", features_intro: "", features: [],
@@ -10,8 +10,9 @@ const EMPTY_HOME: HomeContent = {
 };
 
 const FALLBACK: Site = {
-  name: "MyApp", tagline: "", contact_email: "", contact_text: "", primary_color: "#4f46e5",
-  has_logo: false, has_portrait: false, home: EMPTY_HOME, registration: false,
+  name: "MyApp", tagline: "", tagline_en: "", contact_email: "", contact_text: "", contact_text_en: "",
+  primary_color: "#4f46e5", registration: false, default_lang: "de",
+  has_logo: false, has_portrait: false, home: { de: EMPTY_HOME, en: EMPTY_HOME },
 };
 
 type SiteState = { site: Site; refresh: () => Promise<void>; logoVersion: number };
@@ -34,7 +35,6 @@ export function SiteProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => { refresh().catch(() => {}); }, [refresh]);
 
-  // Everything derived from site settings that lives outside React's tree.
   useEffect(() => {
     document.title = site.name;
     const link = document.getElementById("favicon") as HTMLLinkElement | null;

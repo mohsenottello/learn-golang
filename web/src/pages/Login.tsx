@@ -1,31 +1,35 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { auth } from "../api";
 import { useAuth } from "../auth";
+import { useLang } from "../lang";
 import { TextField, useSubmit } from "../ui";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [params] = useSearchParams();
   const navigate = useNavigate();
   const { setUser } = useAuth();
+  const { t } = useLang();
   const { onSubmit, busy } = useSubmit(async () => {
-    setUser(await auth.login(email, password));
-    navigate("/account");
+    const u = await auth.login(email, password);
+    setUser(u);
+    navigate(params.get("next") ?? (u.role === "user" ? "/account" : "/admin"));
   });
 
   return (
     <>
-      <span className="card-title">Log in</span>
+      <span className="card-title">{t("login_title")}</span>
       <form onSubmit={onSubmit} className="section">
-        <TextField label="Email" type="email" value={email} onChange={setEmail} />
-        <TextField label="Password" type="password" value={password} onChange={setPassword} />
+        <TextField label={t("f_email")} type="email" value={email} onChange={setEmail} />
+        <TextField label={t("f_password")} type="password" value={password} onChange={setPassword} />
         <button className="btn teal waves-effect waves-light" type="submit" disabled={busy}>
-          Log in <i className="material-icons right">login</i>
+          {t("login_button")} <i className="material-icons right">login</i>
         </button>
-        <Link className="btn-flat waves-effect" to="/forgot-password">Forgot password?</Link>
+        <Link className="btn-flat waves-effect" to="/forgot-password">{t("forgot_link")}</Link>
       </form>
-      <p><Link to="/register">Need an account? Register</Link></p>
+      <p><Link to="/register">{t("need_account")}</Link></p>
     </>
   );
 }

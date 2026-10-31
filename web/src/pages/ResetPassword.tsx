@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { auth } from "../api";
+import { useLang } from "../lang";
 import { Message, TextField, useSubmit } from "../ui";
 
 export default function ResetPassword() {
@@ -9,30 +10,31 @@ export default function ResetPassword() {
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [done, setDone] = useState<string | null>(null);
+  const { t } = useLang();
   const { onSubmit, busy } = useSubmit(async () => {
-    if (password !== confirm) throw new Error("Passwords don't match.");
+    if (password !== confirm) throw new Error(t("reset_mismatch"));
     const r = await auth.resetPassword(token, password);
     setDone(r.message);
   });
 
-  if (!token) return <Message title="Invalid link"><p>This reset link is missing its token.</p></Message>;
+  if (!token) return <Message title={t("invalid_link")}><p>{t("reset_missing")}</p></Message>;
   if (done) {
     return (
-      <Message title="Password updated">
+      <Message title={t("reset_done")}>
         <p>{done}</p>
-        <Link className="btn teal" to="/login">Log in</Link>
+        <Link className="btn teal" to="/login">{t("login_button")}</Link>
       </Message>
     );
   }
 
   return (
     <>
-      <span className="card-title">Choose a new password</span>
+      <span className="card-title">{t("reset_title")}</span>
       <form onSubmit={onSubmit}>
-        <TextField label="New password" type="password" value={password} onChange={setPassword} minLength={8} />
-        <TextField label="Confirm password" type="password" value={confirm} onChange={setConfirm} minLength={8} />
+        <TextField label={t("reset_new")} type="password" value={password} onChange={setPassword} minLength={8} />
+        <TextField label={t("reset_confirm")} type="password" value={confirm} onChange={setConfirm} minLength={8} />
         <button className="btn teal waves-effect waves-light" type="submit" disabled={busy}>
-          Save <i className="material-icons right">lock_reset</i>
+          {t("reset_save")} <i className="material-icons right">lock_reset</i>
         </button>
       </form>
     </>

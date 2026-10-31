@@ -4,14 +4,15 @@ import { Bullet, Education, Experience, FullResume, Lang, Language, Resume, Soft
 import { useToast } from "../toast";
 import { TextField } from "../ui";
 import SectionEditor from "./SectionEditor";
+import { StringKey } from "../i18n";
 
 export type ResumeSection = "profile" | "software" | "languages" | "education" | "experience";
-export const RESUME_SECTIONS: { key: ResumeSection; label: string; icon: string }[] = [
-  { key: "profile", label: "Profile", icon: "person" },
-  { key: "software", label: "Software", icon: "build" },
-  { key: "languages", label: "Languages", icon: "translate" },
-  { key: "education", label: "Education", icon: "school" },
-  { key: "experience", label: "Experience", icon: "work" },
+export const RESUME_SECTIONS: { key: ResumeSection; label: StringKey; icon: string }[] = [
+  { key: "profile", label: "sec_profile", icon: "person" },
+  { key: "software", label: "sec_software", icon: "build" },
+  { key: "languages", label: "sec_languages", icon: "translate" },
+  { key: "education", label: "sec_education", icon: "school" },
+  { key: "experience", label: "sec_experience", icon: "work" },
 ];
 export const isResumeSection = (s: string): s is ResumeSection => RESUME_SECTIONS.some((x) => x.key === s);
 

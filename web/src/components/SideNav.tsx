@@ -1,4 +1,6 @@
 import { ReactNode, useState } from "react";
+import { STRINGS, StringKey } from "../i18n";
+import { useLang } from "../lang";
 
 export type NavItem<K extends string> = { key: K; label: string; icon: string };
 export type NavGroup<K extends string> = { title?: string; items: NavItem<K>[] };
@@ -13,6 +15,8 @@ type Props<K extends string> = {
 
 export default function SideNav<K extends string>({ header, groups, active, onSelect, footer }: Props<K>) {
   const [collapsed, setCollapsed] = useState(() => localStorage.getItem("sidenav.collapsed") === "1");
+  const { lang } = useLang();
+  const label = (l: string) => (l in STRINGS[lang] ? STRINGS[lang][l as StringKey] : l);
   const [closed, setClosed] = useState<Record<string, boolean>>({});
 
   const toggleCollapsed = () => {
@@ -42,11 +46,11 @@ export default function SideNav<K extends string>({ header, groups, active, onSe
               </button>
             )}
             {!isClosed && g.items.map((it) => (
-              <a key={it.key} href={`#${it.key}`} title={collapsed ? it.label : undefined}
+              <a key={it.key} href={`#${it.key}`} title={collapsed ? label(it.label) : undefined}
                 onClick={(e) => { e.preventDefault(); onSelect(it.key); }}
                 className={`editor-nav${active === it.key ? " active" : ""}`}>
                 <i className="material-icons">{it.icon}</i>
-                {!collapsed && <span>{it.label}</span>}
+                {!collapsed && <span>{label(it.label)}</span>}
               </a>
             ))}
           </div>

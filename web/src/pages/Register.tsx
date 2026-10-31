@@ -1,33 +1,36 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { auth } from "../api";
-import { Message, TextField, useSubmit } from "../ui";
+import { useLang } from "../lang";
 import { useSite } from "../site";
+import { Message, TextField, useSubmit } from "../ui";
 
 export default function Register() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [done, setDone] = useState<string | null>(null);
+  const { site } = useSite();
+  const { t } = useLang();
   const { onSubmit, busy } = useSubmit(async () => {
     const r = await auth.register(email, name, password);
     setDone(r.message);
   });
 
-  if (done) return <Message title="Check your email"><p>{done}</p></Message>;
-  if (!useSite().site.registration) return <Message title="Registration disabled"><p>New user registration is currently disabled.</p></Message>;
+  if (done) return <Message title={t("check_email")}><p>{done}</p></Message>;
+  if (!site.registration) return <Message title={t("register_closed_title")}><p>{t("register_closed_text")}</p></Message>;
 
   return (
     <>
-      <span className="card-title">Create account</span>
+      <span className="card-title">{t("register_title")}</span>
       <form onSubmit={onSubmit}>
-        <TextField label="Name" type="text" value={name} onChange={setName} />
-        <TextField label="Email" type="email" value={email} onChange={setEmail} />
-        <TextField label="Password" type="password" value={password} onChange={setPassword} minLength={8} />
+        <TextField label={t("f_name")} type="text" value={name} onChange={setName} />
+        <TextField label={t("f_email")} type="email" value={email} onChange={setEmail} />
+        <TextField label={t("f_password")} type="password" value={password} onChange={setPassword} minLength={8} />
         <button className="btn teal waves-effect waves-light" type="submit" disabled={busy}>
-          Register <i className="material-icons right">person_add</i>
+          {t("register_button")} <i className="material-icons right">person_add</i>
         </button>
-        <Link className="btn-flat waves-effect" to="/login">Already have an account? Log in</Link>
+        <Link className="btn-flat waves-effect" to="/login">{t("have_account")}</Link>
       </form>
     </>
   );

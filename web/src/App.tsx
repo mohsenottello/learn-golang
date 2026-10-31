@@ -2,7 +2,8 @@ import { ReactNode, useEffect } from "react";
 import { Link, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "./auth";
 import { useSite } from "./site";
-import { admin } from "./api";
+import { useLang } from "./lang";
+import { Lang } from "./api";
 import Home from "./pages/Home";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
@@ -10,12 +11,11 @@ import Verify from "./pages/Verify";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import Account from "./pages/Account";
-import AdminLogin from "./pages/AdminLogin";
 import PublicResume from "./pages/PublicResume";
 import Admin from "./pages/Admin";
 import Contact from "./pages/Contact";
 
-const appPaths = ["/", "/register", "/login", "/verify", "/forgot-password", "/reset-password", "/account", "/contact", "/admin/login", "/admin"];
+const appPaths = ["/", "/register", "/login", "/verify", "/forgot-password", "/reset-password", "/account", "/contact", "/admin"];
 
 type NavLink = { to: string; label: string; onClick?: () => void; cta?: boolean };
 
@@ -23,43 +23,29 @@ export default function App() {
   const { pathname } = useLocation();
   const { user, logout } = useAuth();
   const { site, logoVersion } = useSite();
-  const registration = site.registration;
+  const { lang, setLang, t } = useLang();
   const navigate = useNavigate();
   const isAdminArea = pathname.startsWith("/admin");
-  const resumeHref = `/${site.home.featured_slug}`;
+  const resumeHref = `/${site.home[lang].featured_slug || site.home.de.featured_slug}`;
 
-  // Materialize's mobile drawer needs a one-time init after the DOM exists.
   useEffect(() => { M.Sidenav.init(document.querySelectorAll(".sidenav")); }, []);
 
   const userLogout = () => logout().finally(() => navigate("/login"));
+  const isStaff = user?.role === "admin" || user?.role === "owner";
 
   const links: NavLink[] = [];
-
   if (isAdminArea) {
-    if (pathname === "/admin") {
-      links.push({ to: "#", label: "Log out", onClick: userLogout });
-    }
-  } else if (!registration) {
-    links.push(
-      { to: "/", label: "Home" },
-      { to: "/contact", label: "Contact" },
-    );
-  } else if (user) {
-    links.push(
-      { to: "/", label: "Home" },
-      { to: resumeHref, label: "My Resume" },
-      { to: "/account", label: "My editor" },
-      { to: "/contact", label: "Contact" },
-      { to: "#", label: "Log out", onClick: userLogout },
-    );
+    if (pathname === "/admin") links.push({ to: "#", label: t("nav_logout"), onClick: userLogout });
   } else {
-    links.push(
-      { to: "/", label: "Home" },
-      { to: resumeHref, label: "My Resume" },
-      { to: "/contact", label: "Contact" },
-      { to: "/login", label: "Login" },
-      { to: "/register", label: "Get Started", cta: true },
-    );
+    links.push({ to: "/", label: t("nav_home") }, { to: resumeHref, label: t("nav_resume") });
+    if (user) links.push({ to: isStaff ? "/admin" : "/account", label: isStaff ? t("nav_admin") : t("nav_editor") });
+    links.push({ to: "/contact", label: t("nav_contact") });
+    if (user) {
+      links.push({ to: "#", label: t("nav_logout"), onClick: userLogout });
+    } else {
+      links.push({ to: "/login", label: t("nav_login") });
+      if (site.registration) links.push({ to: "/register", label: t("nav_register"), cta: true });
+    }
   }
 
   if (!appPaths.includes(pathname)) {
@@ -79,6 +65,16 @@ export default function App() {
     </li>
   );
 
+  const langToggle = (
+    <li key="lang" className="lang-toggle">
+      {(["de", "en"] as Lang[]).map((l) => (
+        <a key={l} href="#" className={lang === l ? "active" : ""} onClick={(e) => { e.preventDefault(); setLang(l); }}>
+          {l.toUpperCase()}
+        </a>
+      ))}
+    </li>
+  );
+
   return (
     <>
       <nav aria-label="Main navigation">
@@ -92,10 +88,10 @@ export default function App() {
           <a href="#" data-target="mobile-menu" className="sidenav-trigger right" aria-label="Open navigation menu">
             <i className="material-icons" style={{ color: "#18223c" }}>menu</i>
           </a>
-          <ul className="right hide-on-med-and-down">{links.map(renderLink)}</ul>
+          <ul className="right hide-on-med-and-down">{links.map(renderLink)}{langToggle}</ul>
         </div>
       </nav>
-      <ul className="sidenav" id="mobile-menu">{links.map(renderLink)}</ul>
+      <ul className="sidenav" id="mobile-menu">{links.map(renderLink)}{langToggle}</ul>
 
       <main className={pathname === "/" ? undefined : "editor-shell"}>
         <Routes>
@@ -107,7 +103,6 @@ export default function App() {
           <Route path="/reset-password" element={<Card><ResetPassword /></Card>} />
           <Route path="/account" element={<Account />} />
           <Route path="/contact" element={<Card><Contact /></Card>} />
-          <Route path="/admin/login" element={<Card><AdminLogin /></Card>} />
           <Route path="/admin" element={<Admin />} />
         </Routes>
       </main>

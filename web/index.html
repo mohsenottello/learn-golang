@@ -40,6 +40,12 @@
     .brand-logo i { color: var(--primary); font-size: 30px; vertical-align: middle; margin-right: 8px; }
     nav ul a { color: #374151; font-size: 13px; font-weight: 600; padding: 0 17px; }
     nav ul a:hover { background: transparent; color: var(--primary); }
+    nav ul li.lang-toggle { display: flex; align-items: center; height: 76px; margin-left: 8px; }
+    nav ul li.lang-toggle a { display: inline-block; float: none; padding: 0 8px; font-size: 12px; color: #9aa3b5; line-height: 76px; }
+    nav ul li.lang-toggle a.active { color: var(--primary); font-weight: 800; }
+    @media only screen and (max-width: 600px) { nav ul li.lang-toggle { height: 64px; } nav ul li.lang-toggle a { line-height: 64px; } }
+    .sidenav li.lang-toggle { display: flex; padding: 0 32px; }
+    .sidenav li.lang-toggle a { display: inline-block; padding: 0 10px; }
     .nav-cta { background: var(--primary); color: #fff !important; height: 42px; line-height: 42px; margin-top: 17px;
                border-radius: 30px; padding: 0 24px !important; }
     .nav-cta:hover { background: var(--primary-dark) !important; color: #fff !important; }

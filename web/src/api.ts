@@ -16,8 +16,9 @@ export class ApiError extends Error {
 }
 
 export type Site = {
-  name: string; tagline: string; contact_email: string; contact_text: string; primary_color: string;
-  has_logo: boolean; has_portrait: boolean; home: HomeContent; registration: boolean; updated_at?: string;
+  name: string; tagline: string; tagline_en: string; contact_email: string; contact_text: string; contact_text_en: string;
+  primary_color: string; registration: boolean; default_lang: Lang;
+  has_logo: boolean; has_portrait: boolean; home: Record<Lang, HomeContent>; updated_at?: string;
 };
 
 type Msg = { message: string };
@@ -64,11 +65,15 @@ export const admin = {
   setPublished: (userId: number, published: boolean) => put<void>(`/api/admin/resumes/${userId}/published`, { published }),
   changePassword: (current_password: string, new_password: string) => put<Msg>("/api/admin/password", { current_password, new_password }),
   setUserPassword: (id: number, new_password: string) => put<void>(`/api/admin/users/${id}/password`, { new_password }),
-  updateSite: (s: Site) =>
-  put<Site>("/api/admin/site", { name: s.name, tagline: s.tagline, contact_email: s.contact_email, contact_text: s.contact_text, primary_color: s.primary_color, registration: s.registration }),
-     uploadLogo: (file: File) => uploadImage("/api/admin/site/logo", "logo", file),
-  updateHome: (h: HomeContent) => put<Site>("/api/admin/site/home", h),
-  resetHome: () => put<Site>("/api/admin/site/home", {}),
+    updateSite: (s: Site) =>
+    put<Site>("/api/admin/site", {
+      name: s.name, tagline: s.tagline, tagline_en: s.tagline_en,
+      contact_email: s.contact_email, contact_text: s.contact_text, contact_text_en: s.contact_text_en,
+      primary_color: s.primary_color, registration: s.registration, default_lang: s.default_lang,
+    }),
+  updateHome: (lang: Lang, h: HomeContent) => put<Site>(`/api/admin/site/home?lang=${lang}`, h),
+  resetHome: (lang: Lang) => put<Site>(`/api/admin/site/home?lang=${lang}`, {}),
+  uploadLogo: (file: File) => uploadImage("/api/admin/site/logo", "logo", file),
   uploadPortrait: (file: File) => uploadImage("/api/admin/site/portrait", "portrait", file),
 };
 

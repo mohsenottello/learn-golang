@@ -1,11 +1,14 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { FullResume, Lang, resume as api } from "../api";
-import { LABELS } from "../labels";
+import { STRINGS } from "../i18n";
+import { useLang } from "../lang";
 
 export default function PublicResume() {
   const { slug = "", lang: langParam } = useParams();
-  const requested = langParam === "de" || langParam === "en" ? (langParam as Lang) : undefined;
+  const { lang: siteLang, setLang: setSiteLang } = useLang();
+  // Explicit /slug/de or /slug/en wins; otherwise follow the site language.
+  const requested: Lang = langParam === "de" || langParam === "en" ? (langParam as Lang) : siteLang;
   const [data, setData] = useState<FullResume | null>(null);
   const [notFound, setNotFound] = useState(false);
 
@@ -16,11 +19,13 @@ export default function PublicResume() {
 
   useEffect(() => { if (data) document.title = data.name; }, [data]);
 
-  if (notFound) return <div className="container"><h5>Not found</h5><p>No published resume at /{slug}.</p></div>;
+  if (notFound) return <div className="container"><h5>404</h5><p>{STRINGS[siteLang].cv_notfound} /{slug}.</p></div>;
   if (!data) return <div className="container"><p>Loading…</p></div>;
 
-  const lang: Lang = data.lang ?? "de";
-  const L = LABELS[lang];
+  const lang: Lang = data.lang ?? requested;
+  const S = STRINGS[lang];
+  const L = { contact: S.cv_contact, about: S.cv_about, software: S.cv_software, languages: S.cv_languages,
+    education: S.cv_education, experience: S.cv_experience, present: S.cv_present, link: S.cv_link, locale: S.locale };
   const r = data.resume;
   const fmt = (ym: string) => {
     if (!ym) return "";
@@ -33,8 +38,8 @@ export default function PublicResume() {
   return (
     <>
       <div className="cv-langbar">
-        <Link to={`/${slug}/de`} className={lang === "de" ? "active" : ""}>DE</Link>
-        <Link to={`/${slug}/en`} className={lang === "en" ? "active" : ""}>EN</Link>
+        <Link to={`/${slug}/de`} className={lang === "de" ? "active" : ""} onClick={() => setSiteLang("de")}>DE</Link>
+        <Link to={`/${slug}/en`} className={lang === "en" ? "active" : ""} onClick={() => setSiteLang("en")}>EN</Link>
       </div>
       <div className="cv" lang={lang} style={{
           "--side-bg": r.side_bg, "--side-text": r.side_text,

@@ -1,19 +1,32 @@
 import { Link } from "react-router-dom";
 import { useSite } from "../site";
 import { useAuth } from "../auth";
+import { useLang } from "../lang";
+import { HomeContent } from "../api";
+
+/** Current-language home content, with per-field fallback to the other language. */
+function pickHome(home: Record<"de" | "en", HomeContent>, lang: "de" | "en"): HomeContent {
+  const a = home[lang], b = home[lang === "de" ? "en" : "de"];
+  const out = { ...b, ...a } as HomeContent;
+  (Object.keys(a) as (keyof HomeContent)[]).forEach((k) => {
+    const v = a[k];
+    if (v === "" || (Array.isArray(v) && v.length === 0)) (out as any)[k] = b[k];
+  });
+  return out;
+}
 
 export default function Home() {
   const { site, logoVersion } = useSite();
-  const registration = site.registration;
   const { user } = useAuth();
-  const h = site.home;
+  const { lang, t } = useLang();
+  const registration = site.registration;
+  const h = pickHome(site.home, lang);
   const resumeHref = `/${h.featured_slug}`;
   const createHref = user ? "/account" : "/register";
   const initials = h.headline.split(/\s+/).filter(Boolean).map((w) => w[0]).join("").slice(0, 2).toUpperCase();
 
   return (
     <>
-      {/* Hero */}
       <section className="hero">
         <div className="container">
           <div className="row" style={{ marginBottom: 0 }}>
@@ -25,15 +38,12 @@ export default function Home() {
                 <Link to={resumeHref} className="btn btn-main">
                   {h.primary_label}<i className="material-icons right">arrow_forward</i>
                 </Link>
-                {h.secondary_label && (
-                  <Link to={createHref} className="btn-outline">
-                    {h.secondary_label}
-                  </Link>
+                {registration && h.secondary_label && (
+                  <Link to={createHref} className="btn-outline">{h.secondary_label}</Link>
                 )}
               </div>
               {h.note && <p className="hero-note"><i className="material-icons">check_circle_outline</i> {h.note}</p>}
             </div>
-
             <div className="col s12 m6">
               <div className="portrait-wrap">
                 <div className="portrait-shape"></div>
@@ -52,7 +62,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Features */}
       {registration && (
         <section className="section-padding features-section" id="features">
           <div className="container center">
@@ -74,7 +83,6 @@ export default function Home() {
         </section>
       )}
 
-      {/* About the resume */}
       <section className="section-padding resume-section" id="about-resume">
         <div className="container">
           <div className="row" style={{ display: "flex", flexWrap: "wrap", marginBottom: 0 }}>
@@ -83,14 +91,14 @@ export default function Home() {
                 <div className="resume-paper">
                   <div className="resume-person">
                     <div className="resume-avatar"><i className="material-icons">person</i></div>
-                    <div><h5>{h.headline}</h5><p>Professional Profile</p></div>
+                    <div><h5>{h.headline}</h5><p>{t("home_professional_profile")}</p></div>
                   </div>
-                  <div className="resume-line-title">EXPERIENCE</div>
+                  <div className="resume-line-title">{t("cv_experience").toUpperCase()}</div>
                   <div className="resume-line long"></div><div className="resume-line medium"></div><div className="resume-line short"></div>
-                  <div className="resume-line-title">EDUCATION</div>
+                  <div className="resume-line-title">{t("cv_education").toUpperCase()}</div>
                   <div className="resume-line long"></div><div className="resume-line medium"></div>
-                  <div className="resume-line-title">SKILLS</div>
-                  <div className="resume-skills"><span>Skills</span><span>Experience</span><span>Education</span></div>
+                  <div className="resume-line-title">{t("cv_software").toUpperCase()}</div>
+                  <div className="resume-skills"><span>{t("cv_software")}</span><span>{t("cv_experience")}</span><span>{t("cv_education")}</span></div>
                 </div>
               </div>
             </div>
@@ -101,7 +109,6 @@ export default function Home() {
               <Link to={resumeHref} className="btn btn-main">
                 {h.about_button}<i className="material-icons right">arrow_forward</i>
               </Link>
-
               <Link to={resumeHref} className="resume-url">
                 <i className="material-icons">link</i>{window.location.host}{resumeHref}
               </Link>
@@ -110,21 +117,19 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Call to action */}
       {registration && (
-         <section className="cta-section center">
-        <div className="container">
-          <i className="material-icons cta-icon">description</i>
-          <h2>{h.cta_heading}</h2>
-          <p>{h.cta_text}</p>
-          <Link to={createHref} className="btn btn-main" style={{ background: "#fff", color: "var(--primary)" }}>
-            {h.cta_button}<i className="material-icons right">arrow_forward</i>
-          </Link>
-        </div>
-      </section>
+        <section className="cta-section center">
+          <div className="container">
+            <i className="material-icons cta-icon">description</i>
+            <h2>{h.cta_heading}</h2>
+            <p>{h.cta_text}</p>
+            <Link to={createHref} className="btn btn-main" style={{ background: "#fff", color: "var(--primary)" }}>
+              {h.cta_button}<i className="material-icons right">arrow_forward</i>
+            </Link>
+          </div>
+        </section>
       )}
 
-      {/* Footer */}
       <footer>
         <div className="container">
           <div className="row" style={{ marginBottom: 0 }}>
@@ -134,17 +139,15 @@ export default function Home() {
             </div>
             <div className="col s12 m7">
               <div className="footer-links">
-                <Link to="/">Home</Link>
-                <Link to={resumeHref}>My Resume</Link>
-                {registration && (
-                  <Link to={createHref}>Create Resume</Link>
-                )}
-                <Link to="/contact">Contact</Link>
+                <Link to="/">{t("nav_home")}</Link>
+                <Link to={resumeHref}>{t("nav_resume")}</Link>
+                {registration && <Link to={createHref}>{t("home_create")}</Link>}
+                <Link to="/contact">{t("nav_contact")}</Link>
               </div>
             </div>
           </div>
           <div className="footer-bottom">
-            <p>© {new Date().getFullYear()} {site.name}. All rights reserved.</p>
+            <p>© {new Date().getFullYear()} {site.name}. {t("rights")}</p>
           </div>
         </div>
       </footer>
