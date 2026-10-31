@@ -42,9 +42,9 @@ export default function App() {
     links.push({ to: "/contact", label: t("nav_contact") });
     if (user) {
       links.push({ to: "#", label: t("nav_logout"), onClick: userLogout });
-    } else {
+    } else if (site.registration) {
       links.push({ to: "/login", label: t("nav_login") });
-      if (site.registration) links.push({ to: "/register", label: t("nav_register"), cta: true });
+      links.push({ to: "/register", label: t("nav_register"), cta: true });
     }
   }
 
