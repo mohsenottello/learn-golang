@@ -41,24 +41,12 @@ func clearCookie(w http.ResponseWriter, name string) {
 }
 
 func (h *handlers) requireAdmin(next http.HandlerFunc) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		c, err := r.Cookie(userCookie)
-		if err != nil {
-			writeError(w, http.StatusUnauthorized, "not logged in")
-			return
-		}
-		user, err := h.Store.UserForSession(r.Context(), c.Value)
-		if err != nil {
-			writeError(w, http.StatusUnauthorized, "not logged in")
-			return
-		}
-
-		if user.Role == "user" {
+	return h.requireUser(func(w http.ResponseWriter, r *http.Request) {
+		if u := currentUser(r); u.Role != "admin" && u.Role != "owner" {
 			writeError(w, http.StatusForbidden, "not authorized")
 			return
 		}
-
-		next(w, r.WithContext(context.WithValue(r.Context(), userKey, user)))
+		next(w, r)
 	})
 }
 

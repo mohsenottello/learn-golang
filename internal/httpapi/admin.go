@@ -43,6 +43,12 @@ func (h *handlers) adminUpdateUser(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, "Role must be one of: user, admin, owner.")
 		return
 	}
+
+	if id == currentUser(r).ID {
+		writeError(w, http.StatusBadGateway, "You cannot update your own user record.")
+		return
+	}
+
 	u, err := h.Store.AdminUpdateUser(r.Context(), id, in.Email, in.Name, in.Verified, in.Role)
 	if errors.Is(err, store.ErrDuplicate) {
 		writeError(w, http.StatusConflict, "Another user already has that email.")

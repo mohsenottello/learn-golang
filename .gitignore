@@ -7,3 +7,4 @@ web/dist/*
 .vscode/
 .DS_Store
 tmp/
+web/tsconfig.tsbuildinfo

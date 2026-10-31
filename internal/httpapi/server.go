@@ -86,6 +86,7 @@ func NewRouter(d Deps) http.Handler {
 	mux.Handle("PUT /api/admin/site/home", admin(h.adminUpdateHome))
 	mux.Handle("PUT /api/admin/site/portrait", admin(h.adminUploadPortrait))
 	mux.Handle("GET /api/admin/site", admin(h.adminGetSite))
+	mux.Handle("PUT /api/admin/users/{id}/password", admin(h.adminSetUserPassword))
 
 	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("ok"))
