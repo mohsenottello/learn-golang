@@ -25,7 +25,7 @@ func (s *Store) EnsureAdmin(ctx context.Context, email, passwordHash string) err
 func (s *Store) AdminByEmail(ctx context.Context, email string) (*Admin, error) {
 	var a Admin
 	err := s.db.QueryRowContext(ctx,
-		`SELECT id, email, password_hash, created_at FROM admins WHERE email = $1 AND (role = 'admin' or role = 'owner')`, email,
+		`SELECT id, email, password_hash, created_at FROM users WHERE email = $1 AND (role = 'admin' or role = 'owner')`, email,
 	).Scan(&a.ID, &a.Email, &a.PasswordHash, &a.CreatedAt)
 	if err != nil {
 		return nil, translate(err)

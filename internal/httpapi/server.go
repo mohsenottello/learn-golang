@@ -9,13 +9,15 @@ import (
 
 	"github.com/mohsenottello/golang/internal/mail"
 	"github.com/mohsenottello/golang/internal/store"
+	"github.com/mohsenottello/golang/internal/translate"
 )
 
 type Deps struct {
-	Store   *store.Store
-	Mailer  *mail.Mailer
-	BaseURL string
-	Static  fs.FS
+	Store      *store.Store
+	Mailer     *mail.Mailer
+	BaseURL    string
+	Static     fs.FS
+	Translator *translate.Client
 }
 
 type handlers struct{ Deps }
@@ -93,6 +95,9 @@ func NewRouter(d Deps) http.Handler {
 	})
 
 	mux.Handle("/", spaHandler(d.Static))
+
+	// Translation
+	mux.Handle("POST /api/translate", user(h.translateTexts))
 
 	return recoverPanic(logRequests(mux))
 }

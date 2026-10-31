@@ -5,6 +5,7 @@ import { useToast } from "../toast";
 import { TextField } from "../ui";
 import SectionEditor from "./SectionEditor";
 import { StringKey } from "../i18n";
+import TranslateButton from "./TranslateButton";
 
 export type ResumeSection = "profile" | "software" | "languages" | "education" | "experience";
 export const RESUME_SECTIONS: { key: ResumeSection; label: StringKey; icon: string }[] = [
@@ -106,6 +107,20 @@ export default function ResumeEditor({ section }: { section: ResumeSection }) {
             <div className="card">
               <div className="card-content">
                 <span className="card-title">Responsibilities — {exp.company}</span>
+                <div style={{ marginBottom: 8 }}>
+                  <TranslateButton small from="de" to="en"
+                    texts={exp.bullets.map((b) => b.text)}
+                    onResult={async (out) => {
+                      await Promise.all(exp.bullets.map((b, i) => api.updateBullet(exp.id, { ...b, text_en: out[i] })));
+                      await reload();
+                    }} />
+                  <TranslateButton small from="en" to="de"
+                    texts={exp.bullets.map((b) => b.text_en)}
+                    onResult={async (out) => {
+                      await Promise.all(exp.bullets.map((b, i) => api.updateBullet(exp.id, { ...b, text: out[i] })));
+                      await reload();
+                    }} />
+                </div>
                 <SectionEditor<Bullet>
                   flat title="" items={exp.bullets}
                   fields={[{ key: "text", label: "Text", required: true, translatable: true, type: "textarea" }]}
@@ -208,6 +223,15 @@ function ProfileEditor({ data, onChange }: { data: FullResume; onChange: (d: Ful
               </label>
             </p>
           </div>
+        </div>
+
+        <div style={{ marginTop: "1rem" }}>
+          <TranslateButton from="de" to="en"
+            texts={[header.title, header.subtitle, header.about]}
+            onResult={([t, s, a]) => setHeader({ ...header, title_en: t, subtitle_en: s, about_en: a })} />
+          <TranslateButton from="en" to="de"
+            texts={[header.title_en, header.subtitle_en, header.about_en]}
+            onResult={([t, s, a]) => setHeader({ ...header, title: t, subtitle: s, about: a })} />
         </div>
 
         {pair("Title", "title", "e.g. Architektin")}

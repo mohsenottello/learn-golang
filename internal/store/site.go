@@ -11,19 +11,20 @@ import (
 var Langs = []string{"de", "en"}
 
 type Site struct {
-	Name          string                 `json:"name"`
-	Tagline       string                 `json:"tagline"`
-	TaglineEn     string                 `json:"tagline_en"`
-	ContactEmail  string                 `json:"contact_email"`
-	ContactText   string                 `json:"contact_text"`
-	ContactTextEn string                 `json:"contact_text_en"`
-	PrimaryColor  string                 `json:"primary_color"`
-	Registration  bool                   `json:"registration"`
-	DefaultLang   string                 `json:"default_lang"`
-	HasLogo       bool                   `json:"has_logo"`
-	HasPortrait   bool                   `json:"has_portrait"`
-	Home          map[string]HomeContent `json:"home"` // keyed by lang: "de", "en"
-	UpdatedAt     time.Time              `json:"updated_at"`
+	Name               string                 `json:"name"`
+	Tagline            string                 `json:"tagline"`
+	TaglineEn          string                 `json:"tagline_en"`
+	ContactEmail       string                 `json:"contact_email"`
+	ContactText        string                 `json:"contact_text"`
+	ContactTextEn      string                 `json:"contact_text_en"`
+	PrimaryColor       string                 `json:"primary_color"`
+	Registration       bool                   `json:"registration"`
+	DefaultLang        string                 `json:"default_lang"`
+	HasLogo            bool                   `json:"has_logo"`
+	HasPortrait        bool                   `json:"has_portrait"`
+	Home               map[string]HomeContent `json:"home"`                // keyed by lang: "de", "en"
+	TranslationEnabled bool                   `json:"translation_enabled"` // set by the handler, not persisted
+	UpdatedAt          time.Time              `json:"updated_at"`
 }
 
 type Feature struct {
@@ -61,13 +62,13 @@ func DefaultHome(lang string) HomeContent {
 	if lang == "de" {
 		return HomeContent{
 			Greeting: "Hallo, ich bin", Headline: "Elahe Roshandel",
-			Description:    "Willkommen auf meiner persönlichen Seite! Hier teile ich meinen beruflichen Werdegang, meine Erfahrung und meine Fähigkeiten. Du kannst hier auch deinen eigenen Lebenslauf erstellen und teilen.",
-			PrimaryLabel:   "Mein Lebenslauf", SecondaryLabel: "Eigenen Lebenslauf erstellen",
-			Note:           "Deine Geschichte verdient eine professionelle Präsentation.",
-			FloatingNote:   "Deine Zukunft, deine Geschichte.",
-			FeaturedSlug:   "elahe-roshandel",
-			FeaturesLabel:  "Was du hier tun kannst", FeaturesHeading: "Lebenslauf erstellen und teilen",
-			FeaturesIntro:  "Ob du einen neuen Job suchst, bessere Chancen erkunden oder deine Fähigkeiten zeigen möchtest – hier ist ein guter Startpunkt.",
+			Description:  "Willkommen auf meiner persönlichen Seite! Hier teile ich meinen beruflichen Werdegang, meine Erfahrung und meine Fähigkeiten. Du kannst hier auch deinen eigenen Lebenslauf erstellen und teilen.",
+			PrimaryLabel: "Mein Lebenslauf", SecondaryLabel: "Eigenen Lebenslauf erstellen",
+			Note:          "Deine Geschichte verdient eine professionelle Präsentation.",
+			FloatingNote:  "Deine Zukunft, deine Geschichte.",
+			FeaturedSlug:  "elahe-roshandel",
+			FeaturesLabel: "Was du hier tun kannst", FeaturesHeading: "Lebenslauf erstellen und teilen",
+			FeaturesIntro: "Ob du einen neuen Job suchst, bessere Chancen erkunden oder deine Fähigkeiten zeigen möchtest – hier ist ein guter Startpunkt.",
 			Features: []Feature{
 				{"description", "teal", "Lebenslauf erstellen", "Erstelle einen professionellen Lebenslauf mit einem einfachen, geführten Prozess."},
 				{"edit", "purple", "Mach ihn zu deinem", "Passe Erfahrung, Ausbildung, Fähigkeiten und Darstellung an."},
@@ -85,12 +86,12 @@ func DefaultHome(lang string) HomeContent {
 	}
 	return HomeContent{
 		Greeting: "Hello, I'm", Headline: "Elahe Roshandel",
-		Description:    "Welcome to my personal space! Here, I share my professional journey, experience, and skills. You can also create your own professional resume and share it with the world.",
-		PrimaryLabel:   "View My Resume", SecondaryLabel: "Create Your Resume",
-		Note:           "Your story deserves a professional presentation.", FloatingNote: "Your future, your story.",
-		FeaturedSlug:   "elahe-roshandel",
-		FeaturesLabel:  "What You Can Do", FeaturesHeading: "Create and Share Your Resume",
-		FeaturesIntro:  "Whether you're looking for a new job, exploring better opportunities, or showcasing your skills, this is a great place to start.",
+		Description:  "Welcome to my personal space! Here, I share my professional journey, experience, and skills. You can also create your own professional resume and share it with the world.",
+		PrimaryLabel: "View My Resume", SecondaryLabel: "Create Your Resume",
+		Note: "Your story deserves a professional presentation.", FloatingNote: "Your future, your story.",
+		FeaturedSlug:  "elahe-roshandel",
+		FeaturesLabel: "What You Can Do", FeaturesHeading: "Create and Share Your Resume",
+		FeaturesIntro: "Whether you're looking for a new job, exploring better opportunities, or showcasing your skills, this is a great place to start.",
 		Features: []Feature{
 			{"description", "teal", "Create Your Resume", "Build a professional resume with a simple, guided process."},
 			{"edit", "purple", "Make It Yours", "Personalize your experience, education, skills, and presentation."},

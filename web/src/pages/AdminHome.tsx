@@ -3,6 +3,7 @@ import { Feature, HomeContent, Lang, admin } from "../api";
 import { useSite } from "../site";
 import { useToast } from "../toast";
 import { TextField } from "../ui";
+import TranslateButton from "../components/TranslateButton";
 
 type F = { key: keyof HomeContent; label: string; multiline?: boolean };
 const GROUPS: { title: string; fields: F[] }[] = [
@@ -34,6 +35,9 @@ export default function AdminHome() {
   const [lang, setLang] = useState<Lang>(site.default_lang);
   const [form, setForm] = useState<HomeContent>(site.home[lang]);
   const toast = useToast();
+  const TEXT_KEYS = GROUPS.flatMap((g) => g.fields.map((f) => f.key)).filter((k) => k !== "featured_slug");
+  const other = site.home[lang === "de" ? "en" : "de"];
+  const otherLang: Lang = lang === "de" ? "en" : "de";
 
   // Re-sync whenever the server copy or the selected language changes.
   useEffect(() => { setForm(site.home[lang]); }, [site.home, lang]);
@@ -51,9 +55,8 @@ export default function AdminHome() {
     try { await admin.resetHome(lang); await refresh(); toast("Reset to defaults."); }
     catch (e) { toast((e as Error).message, "error"); }
   }
-  async function copyFromOther() {
-    const other = site.home[lang === "de" ? "en" : "de"];
-    if (!confirm(`Replace the ${lang.toUpperCase()} form with the ${lang === "de" ? "EN" : "DE"} texts? (not saved until you click Save)`)) return;
+  function copyFromOther() {
+    if (!confirm(`Replace the ${lang.toUpperCase()} form with the ${otherLang.toUpperCase()} texts? (not saved until you click Save)`)) return;
     setForm(other);
   }
   async function uploadPortrait(e: ChangeEvent<HTMLInputElement>) {
@@ -79,9 +82,23 @@ export default function AdminHome() {
         {LANGS.map((l) => (
           <button key={l.key} className={`btn-flat${lang === l.key ? " active" : ""}`} onClick={() => setLang(l.key)}>{l.label}</button>
         ))}
-        <button className="btn-flat right" onClick={copyFromOther} title="Start from the other language's texts">
-          <i className="material-icons left">content_copy</i>Copy from {lang === "de" ? "EN" : "DE"}
-        </button>
+        <span className="right" style={{ display: "flex", gap: 4 }}>
+          <button className="btn-flat" onClick={copyFromOther} title="Start from the other language's texts">
+            <i className="material-icons left">content_copy</i>Copy from {otherLang.toUpperCase()}
+          </button>
+          <TranslateButton from={otherLang} to={lang}
+            texts={[
+              ...TEXT_KEYS.map((k) => other[k] as string),
+              ...other.features.flatMap((f) => [f.title, f.text]),
+            ]}
+            onResult={(out) => {
+              const next: HomeContent = { ...form, featured_slug: other.featured_slug };
+              TEXT_KEYS.forEach((k, i) => { (next as any)[k] = out[i]; });
+              const base = TEXT_KEYS.length;
+              next.features = other.features.map((f, i) => ({ ...f, title: out[base + i * 2], text: out[base + i * 2 + 1] }));
+              setForm(next);
+            }} />
+        </span>
       </div>
 
       {GROUPS.map((g) => (

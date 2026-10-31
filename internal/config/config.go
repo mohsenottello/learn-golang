@@ -12,6 +12,7 @@ type Config struct {
 	DatabaseURL string
 	BaseURL     string
 	SMTP        mail.Config
+	DeepLKey    string
 
 	// Seed admin. If both are set, this admin is created on startup (if missing).
 	AdminEmail    string
@@ -32,6 +33,7 @@ func Load() Config {
 		},
 		AdminEmail:    os.Getenv("ADMIN_EMAIL"),
 		AdminPassword: os.Getenv("ADMIN_PASSWORD"),
+		DeepLKey:      os.Getenv("DEEPL_API_KEY"),
 	}
 }
 

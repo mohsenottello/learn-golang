@@ -12,6 +12,7 @@ services:
       SMTP_FROM: ${SMTP_FROM}
       ADMIN_EMAIL: ${ADMIN_EMAIL}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      DEEPL_API_KEY: ${DEEPL_API_KEY}
     depends_on:
       db:
         condition: service_healthy

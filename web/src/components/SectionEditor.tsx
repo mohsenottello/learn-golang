@@ -1,5 +1,6 @@
 import { DragEvent, useState } from "react";
 import { useToast } from "../toast";
+import TranslateButton from "./TranslateButton";
 
 export type Field<T> = {
   key: keyof T & string;
@@ -138,6 +139,14 @@ export default function SectionEditor<T extends { id: number }>(p: Props<T>) {
                 <div className="row" style={{ marginBottom: 0 }}>
                   <div className="input-field col s12 m6">{input(f.key, `${f.label} (DE)${f.required ? " *" : ""}`, f)}</div>
                   <div className="input-field col s12 m6">{input(`${f.key}_en`, `${f.label} (EN)`, f)}</div>
+                  <div className="col s12" style={{ marginTop: -8, marginBottom: 8 }}>
+                    <TranslateButton small from="de" to="en"
+                      texts={[(editing[f.key] as unknown as string) ?? ""]}
+                      onResult={([v]) => set(`${f.key}_en`, v)} />
+                    <TranslateButton small from="en" to="de"
+                      texts={[(editing[`${f.key}_en` as keyof T] as unknown as string) ?? ""]}
+                      onResult={([v]) => set(f.key, v)} />
+                  </div>
                 </div>
               </div>
             ) : (

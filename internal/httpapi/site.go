@@ -17,12 +17,18 @@ var featureColors = map[string]bool{"teal": true, "purple": true, "pink": true, 
 // GET /api/site — public
 func (h *handlers) getSite(w http.ResponseWriter, r *http.Request) {
 	site, err := h.Store.GetSite(r.Context())
+	if err == nil {
+		site.TranslationEnabled = h.Translator.Enabled()
+	}
 	h.writeItemResult(w, r, site, err)
 }
 
 // GET /api/admin/site — the full settings for the admin panel (same shape for now).
 func (h *handlers) adminGetSite(w http.ResponseWriter, r *http.Request) {
 	site, err := h.Store.GetSite(r.Context())
+	if err == nil {
+		site.TranslationEnabled = h.Translator.Enabled()
+	}
 	h.writeItemResult(w, r, site, err)
 }
 
@@ -98,6 +104,9 @@ func (h *handlers) adminUpdateSite(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	site, err := h.Store.GetSite(r.Context())
+	if err == nil {
+		site.TranslationEnabled = h.Translator.Enabled()
+	}
 	h.writeItemResult(w, r, site, err)
 }
 
@@ -178,5 +187,8 @@ func (h *handlers) adminUpdateHome(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	site, err := h.Store.GetSite(r.Context())
+	if err == nil {
+		site.TranslationEnabled = h.Translator.Enabled()
+	}
 	h.writeItemResult(w, r, site, err)
 }

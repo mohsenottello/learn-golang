@@ -12,7 +12,7 @@ export const EMPTY_HOME: HomeContent = {
 const FALLBACK: Site = {
   name: "MyApp", tagline: "", tagline_en: "", contact_email: "", contact_text: "", contact_text_en: "",
   primary_color: "#4f46e5", registration: false, default_lang: "de",
-  has_logo: false, has_portrait: false, home: { de: EMPTY_HOME, en: EMPTY_HOME },
+  has_logo: false, has_portrait: false, home: { de: EMPTY_HOME, en: EMPTY_HOME }, translation_enabled: false,
 };
 
 type SiteState = { site: Site; refresh: () => Promise<void>; logoVersion: number };

@@ -18,6 +18,7 @@ import (
 	"github.com/mohsenottello/golang/internal/httpapi"
 	"github.com/mohsenottello/golang/internal/mail"
 	"github.com/mohsenottello/golang/internal/store"
+	"github.com/mohsenottello/golang/internal/translate"
 	"github.com/mohsenottello/golang/web"
 )
 
@@ -36,22 +37,34 @@ func main() {
 	}
 
 	if cfg.AdminEmail != "" && cfg.AdminPassword != "" {
-		hash, err := bcrypt.GenerateFromPassword([]byte(cfg.AdminPassword), bcrypt.DefaultCost)
-		if err != nil {
+		email := strings.ToLower(cfg.AdminEmail)
+		admin, err := st.AdminByEmail(ctx, email)
+		if err != nil && !errors.Is(err, store.ErrNotFound) {
 			log.Fatal("admin seed: ", err)
 		}
-		if err := st.EnsureAdmin(ctx, strings.ToLower(cfg.AdminEmail), string(hash)); err != nil {
-			log.Fatal("admin seed: ", err)
+
+		if admin != nil {
+			log.Println("admin seed: already exists")
+		} else {
+
+			hash, err := bcrypt.GenerateFromPassword([]byte(cfg.AdminPassword), bcrypt.DefaultCost)
+			if err != nil {
+				log.Fatal("admin seed: ", err)
+			}
+			if err := st.EnsureAdmin(ctx, email, string(hash)); err != nil {
+				log.Fatal("admin seed: ", err)
+			}
 		}
 	}
 
 	srv := &http.Server{
 		Addr: cfg.Addr,
 		Handler: httpapi.NewRouter(httpapi.Deps{
-			Store:   st,
-			Mailer:  mail.New(cfg.SMTP),
-			BaseURL: cfg.BaseURL,
-			Static:  web.Dist,
+			Store:      st,
+			Mailer:     mail.New(cfg.SMTP),
+			Translator: translate.New(cfg.DeepLKey),
+			BaseURL:    cfg.BaseURL,
+			Static:     web.Dist,
 		}),
 		ReadHeaderTimeout: 10 * time.Second,
 	}

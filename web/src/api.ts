@@ -18,8 +18,12 @@ export class ApiError extends Error {
 export type Site = {
   name: string; tagline: string; tagline_en: string; contact_email: string; contact_text: string; contact_text_en: string;
   primary_color: string; registration: boolean; default_lang: Lang;
-  has_logo: boolean; has_portrait: boolean; home: Record<Lang, HomeContent>; updated_at?: string;
+  has_logo: boolean; has_portrait: boolean; home: Record<Lang, HomeContent>;
+  translation_enabled: boolean; updated_at?: string;
 };
+
+export const translate = (texts: string[], source: Lang, target: Lang) =>
+  post<{ texts: string[] }>("/api/translate", { texts, source, target });
 
 type Msg = { message: string };
 
