@@ -94,7 +94,7 @@ func NewRouter(d Deps) http.Handler {
 		w.Write([]byte("ok"))
 	})
 
-	mux.Handle("/", spaHandler(d.Static))
+	mux.Handle("/", h.spaHandler(d.Static))
 
 	// Translation
 	mux.Handle("POST /api/translate", user(h.translateTexts))
