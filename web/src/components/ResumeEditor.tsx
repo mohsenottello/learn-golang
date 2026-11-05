@@ -2,6 +2,7 @@ import { ChangeEvent, CSSProperties, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Bullet, Education, Experience, FullResume, Lang, Language, Resume, Software, resume as api } from "../api";
 import { useToast } from "../toast";
+import { useSite } from "../site";
 import { TextField } from "../ui";
 import SectionEditor from "./SectionEditor";
 import { StringKey } from "../i18n";
@@ -157,6 +158,7 @@ function ProfileEditor({ data, onChange }: { data: FullResume; onChange: (d: Ful
   const [photoVersion, setPhotoVersion] = useState(0);
   const toast = useToast();
   const set = (k: keyof Resume) => (v: string) => setHeader({ ...header, [k]: v });
+  const { site } = useSite();
 
   async function save() {
     try {
@@ -200,7 +202,7 @@ function ProfileEditor({ data, onChange }: { data: FullResume; onChange: (d: Ful
         <div className="row" style={{ marginBottom: 0 }}>
           <div className="col s12 m4 center-align">
             {header.has_photo
-              ? <img src={`/api/me/resume/photo?v=${photoVersion}`} alt="" className="circle responsive-img" style={{ width: 160, height: 160, objectFit: "cover" }} />
+              ? <img src={`/api/me/resume/photo?v=${photoVersion}`} alt={site.name} className="circle responsive-img" style={{ width: 160, height: 160, objectFit: "cover" }} />
               : <div className="circle grey lighten-2" style={{ width: 160, height: 160, margin: "0 auto" }} />}
             <div className="file-field input-field">
               <div className="btn-flat teal-text"><span>Upload photo</span><input type="file" accept="image/*" onChange={uploadPhoto} /></div>

@@ -95,7 +95,8 @@ func NewRouter(d Deps) http.Handler {
 	})
 
 	mux.Handle("/", h.spaHandler(d.Static))
-
+	///sitemap.xml
+	mux.HandleFunc("GET /sitemap.xml", h.sitemap)
 	// Translation
 	mux.Handle("POST /api/translate", user(h.translateTexts))
 

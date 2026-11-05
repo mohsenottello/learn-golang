@@ -70,7 +70,7 @@ export default function AdminHome() {
     <>
       <div className="card"><div className="card-content">
         <span className="card-title">Portrait</span>
-        {site.has_portrait && <img src={`/api/site/portrait?v=${logoVersion}`} alt="" style={{ maxHeight: 160, borderRadius: 12 }} />}
+        {site.has_portrait && <img src={`/api/site/portrait?v=${logoVersion}`} alt={site.name} style={{ maxHeight: 160, borderRadius: 12 }} />}
         <div className="file-field input-field">
           <div className="btn-flat teal-text"><span>Upload portrait</span><input type="file" accept="image/*" onChange={uploadPortrait} /></div>
           <div className="file-path-wrapper" style={{ display: "none" }}><input className="file-path" type="text" /></div>

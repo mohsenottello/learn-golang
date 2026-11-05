@@ -81,7 +81,7 @@ export default function App() {
         <div className="nav-wrapper container">
           <Link to={isAdminArea ? "/admin" : "/"} className="brand-logo">
             {site.has_logo
-              ? <img src={`/api/site/logo?v=${logoVersion}`} alt="" style={{ height: 36, verticalAlign: "middle", marginRight: 8 }} />
+              ? <img src={`/api/site/logo?v=${logoVersion}`} alt={site.name} style={{ height: 36, verticalAlign: "middle", marginRight: 8 }} />
               : <i className="material-icons">spa</i>}
             {site.name}
           </Link>

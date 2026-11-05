@@ -36,7 +36,7 @@ export default function AdminSite() {
         <div className="row" style={{ marginBottom: 0 }}>
           <div className="col s12 m4 center-align">
             {site.has_logo
-              ? <img src={`/api/site/logo?v=${logoVersion}`} alt="" style={{ maxHeight: 96, maxWidth: "100%" }} />
+              ? <img src={`/api/site/logo?v=${logoVersion}`} alt={site.name} style={{ maxHeight: 96, maxWidth: "100%" }} />
               : <div className="grey lighten-3" style={{ height: 96, lineHeight: "96px" }}>No logo</div>}
             <div className="file-field input-field">
               <div className="btn-flat teal-text"><span>Upload logo</span><input type="file" accept="image/*" onChange={uploadLogo} /></div>
