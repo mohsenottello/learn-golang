@@ -124,6 +124,10 @@ func (h *handlers) metaFor(r *http.Request, p string) (*pageMeta, error) {
 			m.JSONLD = map[string]any{
 				"@context": "https://schema.org", "@type": "WebSite",
 				"name": site.Name, "url": base + "/",
+				"publisher": map[string]any{
+					"@type": "Organization", "name": site.Name, "url": base + "/",
+					"logo": base + "/favicon-192.png",
+				},
 			}
 		}
 		return m, nil

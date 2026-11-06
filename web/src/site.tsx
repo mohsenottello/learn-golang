@@ -27,6 +27,7 @@ function darken(hex: string, f: number) {
 export function SiteProvider({ children }: { children: ReactNode }) {
   const [site, setSite] = useState<Site>(FALLBACK);
   const [logoVersion, setLogoVersion] = useState(0);
+  const [loaded, setLoaded] = useState(false);
 
   const refresh = useCallback(async () => {
     setSite(await api.get());
@@ -34,6 +35,13 @@ export function SiteProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => { refresh().catch(() => {}); }, [refresh]);
+
+  useEffect(() => {
+    if (!loaded) return;                      // keep the server-rendered title until we have real data
+    document.title = site.name;
+    document.documentElement.style.setProperty("--primary", site.primary_color);
+    document.documentElement.style.setProperty("--primary-dark", darken(site.primary_color, 0.75));
+  }, [loaded, site.name, site.primary_color]);
 
   useEffect(() => {
     document.title = site.name;
