@@ -12,7 +12,6 @@ const GROUPS: { title: string; fields: F[] }[] = [
     { key: "description", label: "Description", multiline: true },
     { key: "primary_label", label: "Primary button" }, { key: "secondary_label", label: "Secondary button" },
     { key: "note", label: "Note under buttons" }, { key: "floating_note", label: "Note on portrait" },
-    { key: "featured_slug", label: "Resume slug for 'My Resume'" },
   ]},
   { title: "Features", fields: [
     { key: "features_label", label: "Label" }, { key: "features_heading", label: "Heading" },
@@ -35,7 +34,7 @@ export default function AdminHome() {
   const [lang, setLang] = useState<Lang>(site.default_lang);
   const [form, setForm] = useState<HomeContent>(site.home[lang]);
   const toast = useToast();
-  const TEXT_KEYS = GROUPS.flatMap((g) => g.fields.map((f) => f.key)).filter((k) => k !== "featured_slug");
+  const TEXT_KEYS = GROUPS.flatMap((g) => g.fields.map((f) => f.key));
   const other = site.home[lang === "de" ? "en" : "de"];
   const otherLang: Lang = lang === "de" ? "en" : "de";
 
@@ -92,7 +91,7 @@ export default function AdminHome() {
               ...other.features.flatMap((f) => [f.title, f.text]),
             ]}
             onResult={(out) => {
-              const next: HomeContent = { ...form, featured_slug: other.featured_slug };
+              const next: HomeContent = { ...form };
               TEXT_KEYS.forEach((k, i) => { (next as any)[k] = out[i]; });
               const base = TEXT_KEYS.length;
               next.features = other.features.map((f, i) => ({ ...f, title: out[base + i * 2], text: out[base + i * 2 + 1] }));

@@ -4,7 +4,7 @@ export type AdminResume = { user_id: number; email: string; name: string; slug: 
 export type Feature = { icon: string; color: "teal" | "purple" | "pink" | "blue"; title: string; text: string };
 export type HomeContent = {
   greeting: string; headline: string; description: string; primary_label: string; secondary_label: string;
-  note: string; floating_note: string; featured_slug: string;
+  note: string; floating_note: string;
   features_label: string; features_heading: string; features_intro: string; features: Feature[];
   about_label: string; about_heading: string; about_text: string; about_button: string;
   cta_heading: string; cta_text: string; cta_button: string; footer_text: string;
@@ -17,7 +17,7 @@ export class ApiError extends Error {
 
 export type Site = {
   name: string; tagline: string; tagline_en: string; contact_email: string; contact_text: string; contact_text_en: string;
-  primary_color: string; registration: boolean; default_lang: Lang;
+  primary_color: string; registration: boolean; default_lang: Lang; owner_slug: string;
   has_logo: boolean; has_portrait: boolean; home: Record<Lang, HomeContent>;
   translation_enabled: boolean; updated_at?: string;
 };

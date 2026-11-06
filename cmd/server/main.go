@@ -37,23 +37,13 @@ func main() {
 	}
 
 	if cfg.AdminEmail != "" && cfg.AdminPassword != "" {
-		email := strings.ToLower(cfg.AdminEmail)
-		admin, err := st.AdminByEmail(ctx, email)
-		if err != nil && !errors.Is(err, store.ErrNotFound) {
-			log.Fatal("admin seed: ", err)
+		hash, _ := bcrypt.GenerateFromPassword([]byte(cfg.AdminPassword), bcrypt.DefaultCost)
+		created, err := st.EnsureOwner(ctx, strings.ToLower(cfg.AdminEmail), envOr("ADMIN_NAME", "Owner"), string(hash))
+		if err != nil {
+			log.Fatal("owner seed: ", err)
 		}
-
-		if admin != nil {
-			log.Println("admin seed: already exists")
-		} else {
-
-			hash, err := bcrypt.GenerateFromPassword([]byte(cfg.AdminPassword), bcrypt.DefaultCost)
-			if err != nil {
-				log.Fatal("admin seed: ", err)
-			}
-			if err := st.EnsureAdmin(ctx, email, string(hash)); err != nil {
-				log.Fatal("admin seed: ", err)
-			}
+		if created {
+			log.Println("seeded owner account", cfg.AdminEmail)
 		}
 	}
 
@@ -84,4 +74,11 @@ func main() {
 	defer cancel()
 	log.Println("shutting down")
 	srv.Shutdown(shutdownCtx)
+}
+
+func envOr(key, fallback string) string {
+	if value := os.Getenv(key); value != "" {
+		return value
+	}
+	return fallback
 }

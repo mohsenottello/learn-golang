@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"time"
 )
 
@@ -22,7 +23,8 @@ type Site struct {
 	DefaultLang        string                 `json:"default_lang"`
 	HasLogo            bool                   `json:"has_logo"`
 	HasPortrait        bool                   `json:"has_portrait"`
-	Home               map[string]HomeContent `json:"home"`                // keyed by lang: "de", "en"
+	Home               map[string]HomeContent `json:"home"` // keyed by lang: "de", "en"
+	OwnerSlug          string                 `json:"owner_slug"`
 	TranslationEnabled bool                   `json:"translation_enabled"` // set by the handler, not persisted
 	UpdatedAt          time.Time              `json:"updated_at"`
 }
@@ -42,7 +44,6 @@ type HomeContent struct {
 	SecondaryLabel  string    `json:"secondary_label"`
 	Note            string    `json:"note"`
 	FloatingNote    string    `json:"floating_note"`
-	FeaturedSlug    string    `json:"featured_slug"` // resume that "My Resume" opens
 	FeaturesLabel   string    `json:"features_label"`
 	FeaturesHeading string    `json:"features_heading"`
 	FeaturesIntro   string    `json:"features_intro"`
@@ -66,7 +67,6 @@ func DefaultHome(lang string) HomeContent {
 			PrimaryLabel: "Mein Lebenslauf", SecondaryLabel: "Eigenen Lebenslauf erstellen",
 			Note:          "Deine Geschichte verdient eine professionelle Präsentation.",
 			FloatingNote:  "Deine Zukunft, deine Geschichte.",
-			FeaturedSlug:  "elahe-roshandel",
 			FeaturesLabel: "Was du hier tun kannst", FeaturesHeading: "Lebenslauf erstellen und teilen",
 			FeaturesIntro: "Ob du einen neuen Job suchst, bessere Chancen erkunden oder deine Fähigkeiten zeigen möchtest – hier ist ein guter Startpunkt.",
 			Features: []Feature{
@@ -89,7 +89,6 @@ func DefaultHome(lang string) HomeContent {
 		Description:  "Welcome to my personal space! Here, I share my professional journey, experience, and skills. You can also create your own professional resume and share it with the world.",
 		PrimaryLabel: "View My Resume", SecondaryLabel: "Create Your Resume",
 		Note: "Your story deserves a professional presentation.", FloatingNote: "Your future, your story.",
-		FeaturedSlug:  "elahe-roshandel",
 		FeaturesLabel: "What You Can Do", FeaturesHeading: "Create and Share Your Resume",
 		FeaturesIntro: "Whether you're looking for a new job, exploring better opportunities, or showcasing your skills, this is a great place to start.",
 		Features: []Feature{
@@ -157,7 +156,15 @@ func (s *Store) GetSite(ctx context.Context) (*Site, error) {
 			x.Home[lang] = DefaultHome(lang)
 		}
 	}
+
+	err = s.db.QueryRowContext(ctx, `
+		SELECT r.slug FROM resumes r JOIN users u ON u.id = r.user_id
+		WHERE u.role = 'owner' AND r.published LIMIT 1`).Scan(&x.OwnerSlug)
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return nil, err
+	}
 	return &x, nil
+
 }
 
 func (s *Store) UpdateSite(ctx context.Context, x *Site) error {

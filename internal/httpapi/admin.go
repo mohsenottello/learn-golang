@@ -54,6 +54,17 @@ func (h *handlers) adminUpdateUser(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusConflict, "Another user already has that email.")
 		return
 	}
+
+	me := currentUser(r)
+	if in.Role == "owner" && me.Role != "owner" {
+		writeError(w, http.StatusForbidden, "Only the owner can transfer ownership.")
+		return
+	}
+	if id == me.ID && in.Role != me.Role {
+		writeError(w, http.StatusBadRequest, "You can't change your own role.")
+		return
+	}
+
 	h.writeItemResult(w, r, u, err)
 }
 

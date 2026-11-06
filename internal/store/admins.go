@@ -12,14 +12,19 @@ type Admin struct {
 	CreatedAt    time.Time `json:"created_at"`
 }
 
-// EnsureAdmin creates a verified admin if none exists with that email.
-// Used to seed the first admin from configuration; safe to call on every start.
-func (s *Store) EnsureAdmin(ctx context.Context, email, passwordHash string) error {
-	_, err := s.db.ExecContext(ctx, `
-		INSERT INTO users (email, password_hash, verified, role, name)
-		VALUES ($1, $2, TRUE, 'owner', $3)
-		ON CONFLICT (email) DO NOTHING`, email, passwordHash, "Admin")
-	return err
+// EnsureOwner creates the bootstrap owner account unless an owner already exists.
+// It never modifies an existing owner, so the ADMIN_* env vars stop mattering after first boot.
+func (s *Store) EnsureOwner(ctx context.Context, email, name, passwordHash string) (created bool, err error) {
+	res, err := s.db.ExecContext(ctx, `
+		INSERT INTO users (email, name, password_hash, verified, role)
+		SELECT $1, $2, $3, TRUE, 'owner'
+		WHERE NOT EXISTS (SELECT 1 FROM users WHERE role = 'owner')
+		ON CONFLICT (email) DO NOTHING`, email, name, passwordHash)
+	if err != nil {
+		return false, err
+	}
+	n, _ := res.RowsAffected()
+	return n == 1, nil
 }
 
 func (s *Store) AdminByEmail(ctx context.Context, email string) (*Admin, error) {

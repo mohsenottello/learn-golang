@@ -15,8 +15,6 @@ import PublicResume from "./pages/PublicResume";
 import Admin from "./pages/Admin";
 import Contact from "./pages/Contact";
 
-const appPaths = ["/", "/register", "/login", "/verify", "/forgot-password", "/reset-password", "/account", "/contact", "/admin"];
-
 type NavLink = { to: string; label: string; onClick?: () => void; cta?: boolean };
 
 export default function App() {
@@ -26,7 +24,6 @@ export default function App() {
   const { lang, setLang, t } = useLang();
   const navigate = useNavigate();
   const isAdminArea = pathname.startsWith("/admin");
-  const resumeHref = `/${site.home[lang].featured_slug || site.home.de.featured_slug}`;
 
   useEffect(() => { M.Sidenav.init(document.querySelectorAll(".sidenav")); }, []);
 
@@ -37,7 +34,7 @@ export default function App() {
   if (isAdminArea) {
     if (pathname === "/admin") links.push({ to: "#", label: t("nav_logout"), onClick: userLogout });
   } else {
-    links.push({ to: "/", label: t("nav_home") }, { to: resumeHref, label: t("nav_resume") });
+    links.push({ to: "/", label: t("nav_home") }, { to: "/resume", label: t("nav_resume") });
     if (user) links.push({ to: isStaff ? "/admin" : "/account", label: isStaff ? t("nav_admin") : t("nav_editor") });
     links.push({ to: "/contact", label: t("nav_contact") });
     if (user) {
@@ -46,15 +43,6 @@ export default function App() {
       links.push({ to: "/login", label: t("nav_login") });
       links.push({ to: "/register", label: t("nav_register"), cta: true });
     }
-  }
-
-  if (!appPaths.includes(pathname)) {
-    return (
-      <Routes>
-        <Route path="/:slug/:lang" element={<PublicResume />} />
-        <Route path="/:slug" element={<PublicResume />} />
-      </Routes>
-    );
   }
 
   const renderLink = (l: NavLink) => (
@@ -104,6 +92,10 @@ export default function App() {
           <Route path="/account" element={<Account />} />
           <Route path="/contact" element={<Card><Contact /></Card>} />
           <Route path="/admin" element={<Admin />} />
+          <Route path="/resume" element={<PublicResume featured />} />
+          <Route path="/resume/:lang" element={<PublicResume featured />} />
+          <Route path="/:slug/:lang" element={<PublicResume />} />
+          <Route path="/:slug" element={<PublicResume />} />
         </Routes>
       </main>
     </>

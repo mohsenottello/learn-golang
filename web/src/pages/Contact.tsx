@@ -14,7 +14,7 @@ export default function Contact() {
       </div>
       <div className="card-action">
         {site.contact_email && (
-          <a className="btn teal" href={`mailto:${site.contact_email}`}>
+          <a className="btn btn-main" href={`mailto:${site.contact_email}`}>
             <i className="material-icons left">mail</i>{site.contact_email}
           </a>
         )}

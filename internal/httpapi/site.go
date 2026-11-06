@@ -175,11 +175,6 @@ func (h *handlers) adminUpdateHome(w http.ResponseWriter, r *http.Request) {
 				f.Icon = "star_outline"
 			}
 		}
-		in.FeaturedSlug = strings.ToLower(strings.TrimSpace(in.FeaturedSlug))
-		if in.FeaturedSlug != "" && !validSlug(in.FeaturedSlug) {
-			writeError(w, http.StatusBadRequest, "Featured slug is not a valid slug.")
-			return
-		}
 	}
 
 	if err := h.Store.UpdateHome(r.Context(), lang, in); err != nil {

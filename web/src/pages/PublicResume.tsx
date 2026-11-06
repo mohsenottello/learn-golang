@@ -3,23 +3,31 @@ import { Link, useParams } from "react-router-dom";
 import { FullResume, Lang, resume as api } from "../api";
 import { STRINGS } from "../i18n";
 import { useLang } from "../lang";
+import { useSite } from "../site";
 
-export default function PublicResume() {
-  const { slug = "", lang: langParam } = useParams();
+export default function PublicResume({ featured = false }: { featured?: boolean }) {
+  const params = useParams();
+  const { site } = useSite();
   const { lang: siteLang, setLang: setSiteLang } = useLang();
-  // Explicit /slug/de or /slug/en wins; otherwise follow the site language.
+
+  // /resume shows the site's featured resume; /:slug shows that one.
+  const slug = featured ? site.owner_slug : (params.slug ?? "");
+  const basePath = featured ? "/resume" : `/${slug}`;
+
+  // Explicit /…/de or /…/en wins; otherwise follow the site language.
+  const langParam = params.lang;
   const requested: Lang = langParam === "de" || langParam === "en" ? (langParam as Lang) : siteLang;
   const [data, setData] = useState<FullResume | null>(null);
   const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {
+    if (!slug) return; // featured slug not loaded yet
     setData(null);
+    setNotFound(false);
     api.public(slug, requested).then(setData).catch(() => setNotFound(true));
   }, [slug, requested]);
 
-  useEffect(() => { if (data) document.title = data.name; }, [data]);
-
-  if (notFound) return <div className="container"><h5>404</h5><p>{STRINGS[siteLang].cv_notfound} /{slug}.</p></div>;
+  if (notFound) return <div className="container"><h5>404</h5><p>{STRINGS[siteLang].cv_notfound} {basePath}.</p></div>;
   if (!data) return <div className="container"><p>Loading…</p></div>;
 
   const lang: Lang = data.lang ?? requested;
@@ -37,10 +45,12 @@ export default function PublicResume() {
 
   return (
     <>
+      {featured ? null
+      :
       <div className="cv-langbar">
-        <Link to={`/${slug}/de`} className={lang === "de" ? "active" : ""} onClick={() => setSiteLang("de")}>DE</Link>
-        <Link to={`/${slug}/en`} className={lang === "en" ? "active" : ""} onClick={() => setSiteLang("en")}>EN</Link>
-      </div>
+        <Link to={`${basePath}/de`} className={lang === "de" ? "active" : ""} onClick={() => setSiteLang("de")}>DE</Link>
+        <Link to={`${basePath}/en`} className={lang === "en" ? "active" : ""} onClick={() => setSiteLang("en")}>EN</Link>
+      </div>}
       <div className="cv" lang={lang} style={{
           "--side-bg": r.side_bg, "--side-text": r.side_text,
           "--main-bg": r.main_bg, "--main-text": r.main_text, "--accent": r.accent,
