@@ -18,12 +18,13 @@ import Contact from "./pages/Contact";
 type NavLink = { to: string; label: string; onClick?: () => void; cta?: boolean };
 
 export default function App() {
-  const { pathname } = useLocation();
+  const { pathname, search } = useLocation();
   const { user, logout } = useAuth();
   const { site, logoVersion } = useSite();
   const { lang, setLang, t } = useLang();
   const navigate = useNavigate();
   const isAdminArea = pathname.startsWith("/admin");
+  const print = new URLSearchParams(search).has("print");
 
   useEffect(() => { M.Sidenav.init(document.querySelectorAll(".sidenav")); }, []);
 
@@ -63,23 +64,27 @@ export default function App() {
     </li>
   );
 
-  return (
+    return (
     <>
-      <nav aria-label="Main navigation">
-        <div className="nav-wrapper container">
-          <Link to={isAdminArea ? "/admin" : "/"} className="brand-logo">
-            {site.has_logo
-              ? <img src={`/api/site/logo?v=${logoVersion}`} alt={site.name} style={{ height: 36, verticalAlign: "middle", marginRight: 8 }} />
-              : <i className="material-icons">spa</i>}
-            {site.name}
-          </Link>
-          <a href="#" data-target="mobile-menu" className="sidenav-trigger right" aria-label="Open navigation menu">
-            <i className="material-icons" style={{ color: "#18223c" }}>menu</i>
-          </a>
-          <ul className="right hide-on-med-and-down">{links.map(renderLink)}{langToggle}</ul>
-        </div>
-      </nav>
-      <ul className="sidenav" id="mobile-menu">{links.map(renderLink)}{langToggle}</ul>
+      {!print && (
+        <>
+          <nav aria-label="Main navigation">
+            <div className="nav-wrapper container">
+              <Link to={isAdminArea ? "/admin" : "/"} className="brand-logo">
+                {site.has_logo
+                  ? <img src={`/api/site/logo?v=${logoVersion}`} alt={site.name} style={{ height: 36, verticalAlign: "middle", marginRight: 8 }} />
+                  : <i className="material-icons">spa</i>}
+                {site.name}
+              </Link>
+              <a href="#" data-target="mobile-menu" className="sidenav-trigger right" aria-label="Open navigation menu">
+                <i className="material-icons" style={{ color: "#18223c" }}>menu</i>
+              </a>
+              <ul className="right hide-on-med-and-down">{links.map(renderLink)}{langToggle}</ul>
+            </div>
+          </nav>
+          <ul className="sidenav" id="mobile-menu">{links.map(renderLink)}{langToggle}</ul>
+        </>
+      )}
 
       <main className={pathname === "/" ? undefined : "editor-shell"}>
         <Routes>

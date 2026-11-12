@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useSearchParams } from "react-router-dom";
 import { FullResume, Lang, resume as api } from "../api";
 import { STRINGS } from "../i18n";
 import { useLang } from "../lang";
@@ -7,25 +7,31 @@ import { useSite } from "../site";
 
 export default function PublicResume({ featured = false }: { featured?: boolean }) {
   const params = useParams();
+  const [search] = useSearchParams();
+  const print = search.has("print");
   const { site } = useSite();
   const { lang: siteLang, setLang: setSiteLang } = useLang();
 
-  // /resume shows the site's featured resume; /:slug shows that one.
   const slug = featured ? site.owner_slug : (params.slug ?? "");
   const basePath = featured ? "/resume" : `/${slug}`;
 
-  // Explicit /…/de or /…/en wins; otherwise follow the site language.
   const langParam = params.lang;
   const requested: Lang = langParam === "de" || langParam === "en" ? (langParam as Lang) : siteLang;
   const [data, setData] = useState<FullResume | null>(null);
   const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {
-    if (!slug) return; // featured slug not loaded yet
+    if (!slug) return;
     setData(null);
     setNotFound(false);
     api.public(slug, requested).then(setData).catch(() => setNotFound(true));
   }, [slug, requested]);
+
+  // Tells the PDF renderer the page is fully drawn (it waits for this attribute).
+  useEffect(() => {
+    if (data) document.body.dataset.ready = "1";
+    return () => { delete document.body.dataset.ready; };
+  }, [data]);
 
   if (notFound) return <div className="container"><h5>404</h5><p>{STRINGS[siteLang].cv_notfound} {basePath}.</p></div>;
   if (!data) return <div className="container"><p>Loading…</p></div>;
@@ -40,17 +46,25 @@ export default function PublicResume({ featured = false }: { featured?: boolean 
     const [y, m] = ym.split("-").map(Number);
     return new Date(y, m - 1, 1).toLocaleDateString(L.locale, { month: "short", year: "numeric" });
   };
+  const href = (u: string) => (/^https?:\/\//i.test(u) ? u : `https://${u}`);
   const dash = (from: string, to: string) =>
     !from && !to ? "" : `${fmt(from)}${from ? " – " : ""}${to ? fmt(to) : L.present}`;
 
-  return (
+    return (
     <>
-      {featured ? null
-      :
-      <div className="cv-langbar">
-        <Link to={`${basePath}/de`} className={lang === "de" ? "active" : ""} onClick={() => setSiteLang("de")}>DE</Link>
-        <Link to={`${basePath}/en`} className={lang === "en" ? "active" : ""} onClick={() => setSiteLang("en")}>EN</Link>
-      </div>}
+      {!print && (
+        <div className="cv-langbar">
+          {!featured && (
+            <>
+              <Link to={`${basePath}/de`} className={lang === "de" ? "active" : ""} onClick={() => setSiteLang("de")}>DE</Link>
+              <Link to={`${basePath}/en`} className={lang === "en" ? "active" : ""} onClick={() => setSiteLang("en")}>EN</Link>
+            </>
+          )}
+          <a className="btn-flat" href={`/api/resumes/${slug}/pdf?lang=${lang}`}>
+            <i className="material-icons left">picture_as_pdf</i>{S.cv_pdf}
+          </a>
+        </div>
+      )}
       <div className="cv" lang={lang} style={{
           "--side-bg": r.side_bg, "--side-text": r.side_text,
           "--main-bg": r.main_bg, "--main-text": r.main_text, "--accent": r.accent,
@@ -103,8 +117,9 @@ export default function PublicResume({ featured = false }: { featured?: boolean 
             <article key={x.id} className="cv-job">
               <div className="cv-job-head">
                 <div>
-                  <strong>{x.company}</strong>
-                  {x.link && <> <a href={x.link} target="_blank" rel="noreferrer">({L.link})</a></>}
+                  {x.link
+                    ? <a className="cv-company" href={href(x.link)} target="_blank" rel="noreferrer"><strong>{x.company}</strong></a>
+                    : <strong>{x.company}</strong>}
                   {x.role && <div className="cv-role">{x.role}</div>}
                   {x.subtitle && <div className="cv-muted"><em>{x.subtitle}</em></div>}
                 </div>

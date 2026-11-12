@@ -1,6 +1,6 @@
-dev:          ## infra in Docker, Go on host with hot reload
-	docker compose up -d db mailpit
-	set -a; . ./.env.local; set +a; air
+dev:
+	docker compose up -d db mailpit gotenberg
+	set -a; . ./.env; . ./.env.local; set +a; $(HOME)/go/bin/air
 
 web:          ## React dev server
 	cd web && npm run dev

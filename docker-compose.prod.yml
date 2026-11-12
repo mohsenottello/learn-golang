@@ -13,6 +13,8 @@ services:
       ADMIN_EMAIL: ${ADMIN_EMAIL}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD}
       DEEPL_API_KEY: ${DEEPL_API_KEY}
+      GOTENBERG_URL: http://gotenberg:3000
+      INTERNAL_URL: http://app:8080
     depends_on:
       db:
         condition: service_healthy
@@ -53,7 +55,9 @@ services:
     restart: unless-stopped
     environment:
       DOMAIN: ${DOMAIN}
-
+  gotenberg:
+    image: gotenberg/gotenberg:8
+    restart: unless-stopped
 volumes:
   pgdata:
   caddy_data:

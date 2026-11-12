@@ -21,7 +21,8 @@ export default function Home() {
   const { lang, t } = useLang();
   const registration = site.registration;
   const h = pickHome(site.home, lang);
-  const resumeHref = `/${h.featured_slug}`;
+  const resumeHref = "/resume";
+  const hasResume = Boolean(site.owner_slug);
   const createHref = user ? "/account" : "/register";
   const initials = h.headline.split(/\s+/).filter(Boolean).map((w) => w[0]).join("").slice(0, 2).toUpperCase();
 
@@ -35,9 +36,11 @@ export default function Home() {
               <h1>{h.headline}</h1>
               <p className="hero-description">{h.description}</p>
               <div className="hero-buttons">
-                <Link to={resumeHref} className="btn btn-main">
-                  {h.primary_label}<i className="material-icons right">arrow_forward</i>
-                </Link>
+                {hasResume && (
+                  <Link to={resumeHref} className="btn btn-main">
+                    {h.primary_label}<i className="material-icons right">arrow_forward</i>
+                  </Link>
+                )}
                 {registration && h.secondary_label && (
                   <Link to={createHref} className="btn-outline">{h.secondary_label}</Link>
                 )}
@@ -109,9 +112,11 @@ export default function Home() {
               <Link to={resumeHref} className="btn btn-main">
                 {h.about_button}<i className="material-icons right">arrow_forward</i>
               </Link>
-              <Link to={resumeHref} className="resume-url">
-                <i className="material-icons">link</i>{window.location.host}{resumeHref}
-              </Link>
+              {hasResume && (
+                <Link to={resumeHref} className="resume-url">
+                  <i className="material-icons">link</i>{window.location.host}{resumeHref}
+                </Link>
+              )}
             </div>
           </div>
         </div>

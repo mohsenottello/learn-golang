@@ -17,6 +17,8 @@ type Config struct {
 	// Seed admin. If both are set, this admin is created on startup (if missing).
 	AdminEmail    string
 	AdminPassword string
+	GotenbergURL  string // "" = PDF export disabled
+	InternalURL   string
 }
 
 func Load() Config {
@@ -34,6 +36,8 @@ func Load() Config {
 		AdminEmail:    os.Getenv("ADMIN_EMAIL"),
 		AdminPassword: os.Getenv("ADMIN_PASSWORD"),
 		DeepLKey:      os.Getenv("DEEPL_API_KEY"),
+		GotenbergURL:  os.Getenv("GOTENBERG_URL"),
+		InternalURL:   env("INTERNAL_URL", "http://localhost:8080"),
 	}
 }
 

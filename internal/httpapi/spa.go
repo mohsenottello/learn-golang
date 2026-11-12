@@ -112,7 +112,7 @@ func (h *handlers) metaFor(r *http.Request, p string) (*pageMeta, error) {
 			image = base + "/api/site/logo"
 		}
 		m := &pageMeta{
-			Title:       html.EscapeString(site.Name + " – " + home.Headline),
+			Title:       html.EscapeString(site.Name + " – " + site.TaglineEn),
 			Description: html.EscapeString(home.Description),
 			Image:       image,
 			OgType:      "website",

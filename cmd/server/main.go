@@ -50,11 +50,13 @@ func main() {
 	srv := &http.Server{
 		Addr: cfg.Addr,
 		Handler: httpapi.NewRouter(httpapi.Deps{
-			Store:      st,
-			Mailer:     mail.New(cfg.SMTP),
-			Translator: translate.New(cfg.DeepLKey),
-			BaseURL:    cfg.BaseURL,
-			Static:     web.Dist,
+			Store:        st,
+			Mailer:       mail.New(cfg.SMTP),
+			Translator:   translate.New(cfg.DeepLKey),
+			BaseURL:      cfg.BaseURL,
+			Static:       web.Dist,
+			GotenbergURL: cfg.GotenbergURL,
+			InternalURL:  cfg.InternalURL,
 		}),
 		ReadHeaderTimeout: 10 * time.Second,
 	}

@@ -13,11 +13,13 @@ import (
 )
 
 type Deps struct {
-	Store      *store.Store
-	Mailer     *mail.Mailer
-	BaseURL    string
-	Static     fs.FS
-	Translator *translate.Client
+	Store        *store.Store
+	Mailer       *mail.Mailer
+	Translator   *translate.Client
+	BaseURL      string
+	GotenbergURL string // "" = PDF export disabled
+	InternalURL  string // how Gotenberg's Chrome reaches this app, e.g. http://app:8080
+	Static       fs.FS
 }
 
 type handlers struct{ Deps }
@@ -67,7 +69,7 @@ func NewRouter(d Deps) http.Handler {
 	mux.Handle("PUT /api/me/resume/experience/{id}/bullets/{bid}", user(h.updateBullet))
 	mux.Handle("DELETE /api/me/resume/experience/{id}/bullets/{bid}", user(h.deleteBullet))
 	mux.Handle("PUT /api/me/resume/experience/{id}/bullets-order", user(h.reorderBullets))
-
+	mux.HandleFunc("GET /api/resumes/{slug}/pdf", h.resumePDF)
 	// Public resumes
 	mux.HandleFunc("GET /api/resumes/{slug}", h.publicResume)
 	mux.HandleFunc("GET /api/resumes/{slug}/photo", h.publicPhoto)

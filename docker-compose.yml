@@ -38,5 +38,10 @@ services:
       - "8025:8025"
     restart: unless-stopped
 
+  gotenberg:
+    image: gotenberg/gotenberg:8
+    ports:
+      - "4000:3000"
+    restart: unless-stopped
 volumes:
   pgdata:
