@@ -95,25 +95,29 @@ export default function SectionEditor<T extends { id: number }>(p: Props<T>) {
   const input = (key: string, label: string, f: Field<T>) => {
     const val = (editing![key as keyof T] as unknown as string) ?? "";
     if (f.type === "textarea") {
-      return (<>
-        <textarea className="materialize-textarea" value={val} onChange={(e) => set(key, e.target.value)} />
-        <label className="active">{label}</label>
-      </>);
+      return (
+        <div className="form-floating mb-3">
+          <textarea className="form-control" style={{ height: 100 }} placeholder={label} value={val} onChange={(e) => set(key, e.target.value)} />
+          <label>{label}</label>
+        </div>
+      );
     }
-    return (<>
-      <input type={f.type === "month" ? "month" : "text"} value={val} onChange={(e) => set(key, e.target.value)} />
-      <label className="active">{label}</label>
-    </>);
+    return (
+      <div className="form-floating mb-3">
+        <input className="form-control" type={f.type === "month" ? "month" : "text"} placeholder={label} value={val} onChange={(e) => set(key, e.target.value)} />
+        <label>{label}</label>
+      </div>
+    );
   };
 
   const body = (
     <>
-      {items.length === 0 && !editing && <p className="grey-text">Nothing here yet.</p>}
-      <ul className="collection">
+      {items.length === 0 && !editing && <p className="text-secondary">Nothing here yet.</p>}
+      <ul className="list-group mb-3">
         {items.map((it) => {
           const selected = p.selectedId === it.id;
           return (
-            <li key={it.id} className={`collection-item${selected ? " active teal lighten-5" : ""}`}
+            <li key={it.id} className={`list-group-item${selected ? " active-item" : ""}`}
               draggable
               onDragStart={(e) => onDragStart(e, it.id)}
               onDragOver={(e) => onDragOver(e, it.id)}
@@ -122,24 +126,24 @@ export default function SectionEditor<T extends { id: number }>(p: Props<T>) {
               onClick={() => p.onSelect?.(it.id)}
               style={{ display: "flex", alignItems: "center", opacity: dragId === it.id ? 0.4 : 1,
                 cursor: p.onSelect ? "pointer" : "grab", color: selected ? "#004d40" : undefined }}>
-              <i className="material-icons grey-text" style={{ marginRight: 8, cursor: "grab" }}>drag_indicator</i>
+              <i className="material-icons text-secondary" style={{ marginRight: 8, cursor: "grab" }}>drag_indicator</i>
               <span style={{ flex: 1 }}>{p.summary(it)}</span>
-              <button className="btn-flat" onClick={(e) => { e.stopPropagation(); setEditing({ ...it }); }}><i className="material-icons">edit</i></button>
-              <button className="btn-flat red-text" onClick={(e) => { e.stopPropagation(); remove(it.id); }}><i className="material-icons">delete</i></button>
+              <button className="btn btn-link btn-sm p-1" onClick={(e) => { e.stopPropagation(); setEditing({ ...it }); }}><i className="material-icons">edit</i></button>
+              <button className="btn btn-link btn-sm p-1 text-danger" onClick={(e) => { e.stopPropagation(); remove(it.id); }}><i className="material-icons">delete</i></button>
             </li>
           );
         })}
       </ul>
 
       {editing ? (
-        <div className="row" style={{ marginBottom: 0 }}>
+        <div className="row">
           {p.fields.map((f) =>
             f.translatable ? (
-              <div key={f.key} className="col s12">
-                <div className="row" style={{ marginBottom: 0 }}>
-                  <div className="input-field col s12 m6">{input(f.key, `${f.label} (DE)${f.required ? " *" : ""}`, f)}</div>
-                  <div className="input-field col s12 m6">{input(`${f.key}_en`, `${f.label} (EN)`, f)}</div>
-                  <div className="col s12" style={{ marginTop: -8, marginBottom: 8 }}>
+              <div key={f.key} className="col-12">
+                <div className="row">
+                  <div className="col-12 col-md-6">{input(f.key, `${f.label} (DE)${f.required ? " *" : ""}`, f)}</div>
+                  <div className="col-12 col-md-6">{input(`${f.key}_en`, `${f.label} (EN)`, f)}</div>
+                  <div className="col-12" style={{ marginTop: -8, marginBottom: 8 }}>
                     <TranslateButton small from="de" to="en"
                       texts={[(editing[f.key] as unknown as string) ?? ""]}
                       onResult={([v]) => set(`${f.key}_en`, v)} />
@@ -150,19 +154,19 @@ export default function SectionEditor<T extends { id: number }>(p: Props<T>) {
                 </div>
               </div>
             ) : (
-              <div key={f.key} className={`input-field col s12${f.half ? " m6" : ""}`}>
+              <div key={f.key} className={`col-12${f.half ? " col-md-6" : ""}`}>
                 {input(f.key, `${f.label}${f.required ? " *" : ""}`, f)}
               </div>
             ),
           )}
-          <div className="col s12">
-            <button className="btn teal" onClick={save} disabled={busy}>Save</button>{" "}
-            <button className="btn-flat" onClick={() => setEditing(null)}>Cancel</button>
+          <div className="col-12">
+            <button className="btn btn-primary" onClick={save} disabled={busy}>Save</button>{" "}
+            <button className="btn btn-link" onClick={() => setEditing(null)}>Cancel</button>
           </div>
         </div>
       ) : (
-        <button className="btn-flat teal-text" onClick={() => setEditing(empty())}>
-          <i className="material-icons left">add</i>Add
+        <button className="btn btn-link" onClick={() => setEditing(empty())}>
+          <i className="material-icons align-middle me-1">add</i>Add
         </button>
       )}
     </>
@@ -170,9 +174,9 @@ export default function SectionEditor<T extends { id: number }>(p: Props<T>) {
 
   if (p.flat) return <>{p.title && <h6>{p.title}</h6>}{body}</>;
   return (
-    <div className="card">
-      <div className="card-content">
-        <span className="card-title">{p.title}</span>
+    <div className="card mb-3">
+      <div className="card-body">
+        <h5 className="card-title">{p.title}</h5>
         {body}
       </div>
     </div>

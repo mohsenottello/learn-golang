@@ -22,19 +22,19 @@ export default function ResetPassword() {
     return (
       <Message title={t("reset_done")}>
         <p>{done}</p>
-        <Link className="btn teal" to="/login">{t("login_button")}</Link>
+        <Link className="btn btn-primary" to="/login">{t("login_button")}</Link>
       </Message>
     );
   }
 
   return (
     <>
-      <span className="card-title">{t("reset_title")}</span>
+      <h5 className="card-title">{t("reset_title")}</h5>
       <form onSubmit={onSubmit}>
         <TextField label={t("reset_new")} type="password" value={password} onChange={setPassword} minLength={8} />
         <TextField label={t("reset_confirm")} type="password" value={confirm} onChange={setConfirm} minLength={8} />
-        <button className="btn teal waves-effect waves-light" type="submit" disabled={busy}>
-          {t("reset_save")} <i className="material-icons right">lock_reset</i>
+        <button className="btn btn-primary" type="submit" disabled={busy}>
+          {t("reset_save")} <i className="material-icons align-middle ms-1">lock_reset</i>
         </button>
       </form>
     </>

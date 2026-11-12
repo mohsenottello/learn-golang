@@ -8,12 +8,14 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@popperjs/core": "~2.11.8",
+    "bootstrap": "~5.3.3",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "~7.18.4"
   },
   "devDependencies": {
-    "@types/materialize-css": "^1.0.15",
+    "@types/bootstrap": "^5.2.11",
     "@types/react": "^18.3.11",
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "~4.3.2",

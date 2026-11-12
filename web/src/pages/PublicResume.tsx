@@ -60,8 +60,8 @@ export default function PublicResume({ featured = false }: { featured?: boolean 
               <Link to={`${basePath}/en`} className={lang === "en" ? "active" : ""} onClick={() => setSiteLang("en")}>EN</Link>
             </>
           )}
-          <a className="btn-flat" href={`/api/resumes/${slug}/pdf?lang=${lang}`}>
-            <i className="material-icons left">picture_as_pdf</i>{S.cv_pdf}
+          <a className="btn btn-link btn-sm" href={`/api/resumes/${slug}/pdf?lang=${lang}`}>
+            <i className="material-icons align-middle me-1">picture_as_pdf</i>{S.cv_pdf}
           </a>
         </div>
       )}
@@ -78,11 +78,11 @@ export default function PublicResume({ featured = false }: { featured?: boolean 
           {(r.email || r.phone || r.location || r.linkedin) && (
             <>
               <h6 className="cv-section">{L.contact}</h6>
-              <ul className="browser-default cv-contact">
-                {r.email && <li><i className="material-icons tiny">mail</i><a href={`mailto:${r.email}`}>{r.email}</a></li>}
-                {r.linkedin && <li><i className="material-icons tiny">link</i><a href={r.linkedin} target="_blank" rel="noreferrer">LinkedIn</a></li>}
-                {r.phone && <li><i className="material-icons tiny">phone</i>{r.phone}</li>}
-                {r.location && <li><i className="material-icons tiny">place</i>{r.location}</li>}
+              <ul className="cv-contact">
+                {r.email && <li><i className="material-icons cv-icon">mail</i><a href={`mailto:${r.email}`}>{r.email}</a></li>}
+                {r.linkedin && <li><i className="material-icons cv-icon">link</i><a href={r.linkedin} target="_blank" rel="noreferrer">LinkedIn</a></li>}
+                {r.phone && <li><i className="material-icons cv-icon">phone</i>{r.phone}</li>}
+                {r.location && <li><i className="material-icons cv-icon">place</i>{r.location}</li>}
               </ul>
             </>
           )}
@@ -91,15 +91,15 @@ export default function PublicResume({ featured = false }: { featured?: boolean 
 
           {data.software.length > 0 && (
             <><h6 className="cv-section">{L.software}</h6>
-              <ul className="browser-default cv-list">{data.software.map((s) => <li key={s.id}>{s.name}</li>)}</ul></>
+              <ul className="cv-list">{data.software.map((s) => <li key={s.id}>{s.name}</li>)}</ul></>
           )}
           {data.languages.length > 0 && (
             <><h6 className="cv-section">{L.languages}</h6>
-              <ul className="browser-default cv-list">{data.languages.map((l) => <li key={l.id}>{l.name}{l.level && ` (${l.level})`}</li>)}</ul></>
+              <ul className="cv-list">{data.languages.map((l) => <li key={l.id}>{l.name}{l.level && ` (${l.level})`}</li>)}</ul></>
           )}
           {data.education.length > 0 && (
             <><h6 className="cv-section">{L.education}</h6>
-              <ul className="browser-default cv-list">
+              <ul className="cv-list">
                 {data.education.map((e) => (
                   <li key={e.id}>
                     <strong>{e.degree}</strong>
@@ -129,7 +129,7 @@ export default function PublicResume({ featured = false }: { featured?: boolean 
                 </div>
               </div>
               {x.bullets.length > 0 && (
-                <ul className="browser-default cv-bullets">{x.bullets.map((b) => <li key={b.id}>{b.text}</li>)}</ul>
+                <ul className="cv-bullets">{x.bullets.map((b) => <li key={b.id}>{b.text}</li>)}</ul>
               )}
             </article>
           ))}

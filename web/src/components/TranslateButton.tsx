@@ -30,9 +30,9 @@ export default function TranslateButton({ from, to, texts, onResult, small }: Pr
   }
 
   return (
-    <button type="button" className={`btn-flat teal-text${small ? " btn-small" : ""}`} onClick={run} disabled={busy}
+    <button type="button" className={`btn btn-link${small ? " btn-sm" : ""}`} onClick={run} disabled={busy}
       title={`Translate ${from.toUpperCase()} → ${to.toUpperCase()} with DeepL`}>
-      <i className="material-icons left">translate</i>{from.toUpperCase()}→{to.toUpperCase()}
+      <i className="material-icons align-middle me-1">translate</i>{from.toUpperCase()}→{to.toUpperCase()}
     </button>
   );
 }

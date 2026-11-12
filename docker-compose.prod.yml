@@ -14,7 +14,7 @@ services:
       ADMIN_PASSWORD: ${ADMIN_PASSWORD}
       DEEPL_API_KEY: ${DEEPL_API_KEY}
       GOTENBERG_URL: http://gotenberg:3000
-      INTERNAL_URL: http://app:8080
+      INTERNAL_URL: ${BASE_URL}
     depends_on:
       db:
         condition: service_healthy

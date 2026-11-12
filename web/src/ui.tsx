@@ -1,6 +1,7 @@
 import { FormEvent, ReactNode, useId, useState } from "react";
 import { useToast } from "./toast";
 
+/** Floating-label text input (Bootstrap form-floating). */
 export function TextField(props: {
   label: string;
   type: string;
@@ -10,23 +11,18 @@ export function TextField(props: {
 }) {
   const id = useId();
   return (
-    <div className="input-field">
-      <input id={id} type={props.type} value={props.value} minLength={props.minLength} required
-        onChange={(e) => props.onChange(e.target.value)} />
-      <label htmlFor={id} className={props.value ? "active" : ""}>{props.label}</label>
+    <div className="form-floating mb-3">
+      <input id={id} className="form-control" type={props.type} value={props.value} minLength={props.minLength} required
+        placeholder={props.label} onChange={(e) => props.onChange(e.target.value)} />
+      <label htmlFor={id}>{props.label}</label>
     </div>
   );
-}
-
-export function ErrorPanel({ message }: { message: string | null }) {
-  if (!message) return null;
-  return <div className="card-panel red lighten-4 red-text text-darken-4">{message}</div>;
 }
 
 export function Message({ title, children }: { title: string; children: ReactNode }) {
   return (
     <>
-      <span className="card-title">{title}</span>
+      <h5 className="card-title">{title}</h5>
       {children}
     </>
   );

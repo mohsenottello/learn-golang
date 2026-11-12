@@ -22,15 +22,15 @@ export default function Register() {
 
   return (
     <>
-      <span className="card-title">{t("register_title")}</span>
+      <h5 className="card-title">{t("register_title")}</h5>
       <form onSubmit={onSubmit}>
         <TextField label={t("f_name")} type="text" value={name} onChange={setName} />
         <TextField label={t("f_email")} type="email" value={email} onChange={setEmail} />
         <TextField label={t("f_password")} type="password" value={password} onChange={setPassword} minLength={8} />
-        <button className="btn teal waves-effect waves-light" type="submit" disabled={busy}>
-          {t("register_button")} <i className="material-icons right">person_add</i>
+        <button className="btn btn-primary" type="submit" disabled={busy}>
+          {t("register_button")} <i className="material-icons align-middle ms-1">person_add</i>
         </button>
-        <Link className="btn-flat waves-effect" to="/login">{t("have_account")}</Link>
+        <Link className="btn btn-link" to="/login">{t("have_account")}</Link>
       </form>
     </>
   );

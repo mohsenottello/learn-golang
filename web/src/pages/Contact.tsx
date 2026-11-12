@@ -8,18 +8,14 @@ export default function Contact() {
 
   return (
     <>
-      <div className="card-content">
-        <span className="card-title">{t("contact_title")}</span>
-        {text && <p style={{ whiteSpace: "pre-line" }}>{text}</p>}
-      </div>
-      <div className="card-action">
-        {site.contact_email && (
-          <a className="btn btn-main" href={`mailto:${site.contact_email}`}>
-            <i className="material-icons left">mail</i>{site.contact_email}
-          </a>
-        )}
-        {!text && !site.contact_email && <p className="grey-text">{t("contact_empty")}</p>}
-      </div>
+      <h5 className="card-title">{t("contact_title")}</h5>
+      {text && <p style={{ whiteSpace: "pre-line" }}>{text}</p>}
+      {site.contact_email && (
+        <a className="btn btn-primary" href={`mailto:${site.contact_email}`}>
+          <i className="material-icons align-middle me-1">mail</i>{site.contact_email}
+        </a>
+      )}
+      {!text && !site.contact_email && <p className="text-secondary">{t("contact_empty")}</p>}
     </>
   );
 }

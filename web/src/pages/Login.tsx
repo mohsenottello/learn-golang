@@ -20,14 +20,14 @@ export default function Login() {
 
   return (
     <>
-      <span className="card-title">{t("login_title")}</span>
+      <h5 className="card-title">{t("login_title")}</h5>
       <form onSubmit={onSubmit} className="section">
         <TextField label={t("f_email")} type="email" value={email} onChange={setEmail} />
         <TextField label={t("f_password")} type="password" value={password} onChange={setPassword} />
-        <button className="btn teal waves-effect waves-light" type="submit" disabled={busy}>
-          {t("login_button")} <i className="material-icons right">login</i>
+        <button className="btn btn-primary" type="submit" disabled={busy}>
+          {t("login_button")} <i className="material-icons align-middle ms-1">login</i>
         </button>
-        <Link className="btn-flat waves-effect" to="/forgot-password">{t("forgot_link")}</Link>
+        <Link className="btn btn-link" to="/forgot-password">{t("forgot_link")}</Link>
       </form>
       <p><Link to="/register">{t("need_account")}</Link></p>
     </>

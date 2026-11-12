@@ -1,15 +1,19 @@
 import { useEffect, useRef } from "react";
+import { Modal } from "bootstrap";
 
-/** Initialises a Materialize modal on the ref'd element; returns open/close. */
+/** Initialises a Bootstrap modal on the ref'd element; returns open/close. */
 export function useModal(onClose?: () => void) {
   const ref = useRef<HTMLDivElement>(null);
-  const inst = useRef<M.Modal | null>(null);
+  const inst = useRef<Modal | null>(null);
 
   useEffect(() => {
-    if (!ref.current) return;
-    inst.current = M.Modal.init(ref.current, { onCloseEnd: onClose });
-    return () => inst.current?.destroy();
+    const el = ref.current;
+    if (!el) return;
+    inst.current = new Modal(el);
+    const handler = () => onClose?.();
+    el.addEventListener("hidden.bs.modal", handler);
+    return () => { el.removeEventListener("hidden.bs.modal", handler); inst.current?.dispose(); };
   }, [onClose]);
 
-  return { ref, open: () => inst.current?.open(), close: () => inst.current?.close() };
+  return { ref, open: () => inst.current?.show(), close: () => inst.current?.hide() };
 }

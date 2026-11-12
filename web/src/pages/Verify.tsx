@@ -21,7 +21,7 @@ export default function Verify() {
   return (
     <Message title={state === "ok" ? t("verify_ok") : t("verify_bad")}>
       <p>{message}</p>
-      {state === "ok" && <Link className="btn teal" to="/login?next=/account">{t("login_button")}</Link>}
+      {state === "ok" && <Link className="btn btn-primary" to="/login?next=/account">{t("login_button")}</Link>}
     </Message>
   );
 }

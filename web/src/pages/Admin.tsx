@@ -48,7 +48,7 @@ export default function Admin() {
   return (
     <div className="editor">
       <SideNav
-        header={<>{isOwner ? "Owner" : "Admin"}<br /><small className="grey-text">{user.email}</small></>}
+        header={<>{isOwner ? "Owner" : "Admin"}<br /><small className="text-secondary">{user.email}</small></>}
         groups={groups}
         active={section}
         onSelect={setSection}

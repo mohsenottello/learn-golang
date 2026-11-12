@@ -29,7 +29,7 @@ export default function SideNav<K extends string>({ header, groups, active, onSe
     <aside className={`editor-side${collapsed ? " collapsed" : ""}`}>
       <div className="editor-side-head">
         {!collapsed && <div className="editor-side-name">{header}</div>}
-        <button className="btn-flat editor-collapse" onClick={toggleCollapsed} title={collapsed ? "Expand" : "Collapse"}>
+        <button className="btn btn-link editor-collapse p-1" onClick={toggleCollapsed} title={collapsed ? "Expand" : "Collapse"}>
           <i className="material-icons">{collapsed ? "chevron_right" : "chevron_left"}</i>
         </button>
       </div>

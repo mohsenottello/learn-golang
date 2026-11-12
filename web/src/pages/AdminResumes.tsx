@@ -19,26 +19,26 @@ export default function AdminResumes() {
   }
 
   return (
-    <div className="card">
-      <div className="card-content">
-        <span className="card-title">Resumes</span>
-        <table className="striped">
+    <div className="card mb-3">
+      <div className="card-body">
+        <h5 className="card-title">Resumes</h5>
+        <table className="table table-striped align-middle">
           <thead><tr><th>Owner</th><th>Slug</th><th>Status</th><th>Updated</th><th></th></tr></thead>
           <tbody>
             {list.map((r) => (
               <tr key={r.user_id}>
-                <td>{r.name}<br /><small className="grey-text">{r.email}</small></td>
+                <td>{r.name}<br /><small className="text-secondary">{r.email}</small></td>
                 <td>{r.published ? <Link to={`/${r.slug}`} target="_blank">/{r.slug}</Link> : `/${r.slug}`}</td>
-                <td>{r.published ? <span className="teal-text">published</span> : <span className="grey-text">draft</span>}</td>
+                <td>{r.published ? <span className="text-primary">published</span> : <span className="text-secondary">draft</span>}</td>
                 <td>{new Date(r.updated_at).toLocaleDateString()}</td>
                 <td>
-                  <button className={`btn-flat ${r.published ? "red-text" : "teal-text"}`} onClick={() => toggle(r)}>
+                  <button className={`btn btn-link ${r.published ? "text-danger" : "text-primary"}`} onClick={() => toggle(r)}>
                     {r.published ? "Unpublish" : "Publish"}
                   </button>
                 </td>
               </tr>
             ))}
-            {list.length === 0 && <tr><td colSpan={5} className="grey-text">No resumes yet.</td></tr>}
+            {list.length === 0 && <tr><td colSpan={5} className="text-secondary">No resumes yet.</td></tr>}
           </tbody>
         </table>
       </div>

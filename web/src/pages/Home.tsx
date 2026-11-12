@@ -30,15 +30,15 @@ export default function Home() {
     <>
       <section className="hero">
         <div className="container">
-          <div className="row" style={{ marginBottom: 0 }}>
-            <div className="col s12 m6 hero-copy">
+          <div className="row">
+            <div className="col-12 col-md-6 hero-copy">
               <p className="script-text">{h.greeting}</p>
               <h1>{h.headline}</h1>
               <p className="hero-description">{h.description}</p>
               <div className="hero-buttons">
                 {hasResume && (
-                  <Link to={resumeHref} className="btn btn-main">
-                    {h.primary_label}<i className="material-icons right">arrow_forward</i>
+                  <Link to={resumeHref} className="btn btn-primary">
+                    {h.primary_label}<i className="material-icons align-middle ms-1">arrow_forward</i>
                   </Link>
                 )}
                 {registration && h.secondary_label && (
@@ -47,7 +47,7 @@ export default function Home() {
               </div>
               {h.note && <p className="hero-note"><i className="material-icons">check_circle_outline</i> {h.note}</p>}
             </div>
-            <div className="col s12 m6">
+            <div className="col-12 col-md-6">
               <div className="portrait-wrap">
                 <div className="portrait-shape"></div>
                 {site.has_portrait ? (
@@ -73,7 +73,7 @@ export default function Home() {
             <p className="section-intro">{h.features_intro}</p>
             <div className="row">
               {h.features.map((f, i) => (
-                <div key={i} className="col s12 m6 l3">
+                <div key={i} className="col-12 col-md-6 col-lg-3">
                   <article className="feature-card">
                     <div className={`feature-icon icon-${f.color}`}><i className="material-icons">{f.icon}</i></div>
                     <h5>{f.title}</h5>
@@ -88,8 +88,8 @@ export default function Home() {
 
       <section className="section-padding resume-section" id="about-resume">
         <div className="container">
-          <div className="row" style={{ display: "flex", flexWrap: "wrap", marginBottom: 0 }}>
-            <div className="col s12 m6">
+          <div className="row">
+            <div className="col-12 col-md-6">
               <div className="resume-illustration">
                 <div className="resume-paper">
                   <div className="resume-person">
@@ -105,12 +105,12 @@ export default function Home() {
                 </div>
               </div>
             </div>
-            <div className="col s12 m6 resume-copy">
+            <div className="col-12 col-md-6 resume-copy">
               <div className="section-label">{h.about_label}</div>
               <h2 className="section-heading">{h.about_heading}</h2>
               <p>{h.about_text}</p>
-              <Link to={resumeHref} className="btn btn-main">
-                {h.about_button}<i className="material-icons right">arrow_forward</i>
+              <Link to={resumeHref} className="btn btn-primary">
+                {h.about_button}<i className="material-icons align-middle ms-1">arrow_forward</i>
               </Link>
               {hasResume && (
                 <Link to={resumeHref} className="resume-url">
@@ -128,8 +128,8 @@ export default function Home() {
             <i className="material-icons cta-icon">description</i>
             <h2>{h.cta_heading}</h2>
             <p>{h.cta_text}</p>
-            <Link to={createHref} className="btn btn-main" style={{ background: "#fff", color: "var(--primary)" }}>
-              {h.cta_button}<i className="material-icons right">arrow_forward</i>
+            <Link to={createHref} className="btn btn-primary" style={{ background: "#fff", color: "var(--primary)" }}>
+              {h.cta_button}<i className="material-icons align-middle ms-1">arrow_forward</i>
             </Link>
           </div>
         </section>
@@ -137,12 +137,12 @@ export default function Home() {
 
       <footer>
         <div className="container">
-          <div className="row" style={{ marginBottom: 0 }}>
-            <div className="col s12 m5">
+          <div className="row">
+            <div className="col-12 col-md-5">
               <Link to="/" className="footer-brand"><i className="material-icons">spa</i>{site.name}</Link>
               <p>{h.footer_text}</p>
             </div>
-            <div className="col s12 m7">
+            <div className="col-12 col-md-7">
               <div className="footer-links">
                 <Link to="/">{t("nav_home")}</Link>
                 <Link to={resumeHref}>{t("nav_resume")}</Link>

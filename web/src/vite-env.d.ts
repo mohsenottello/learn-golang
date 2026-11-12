@@ -1,1 +1,1 @@
-/// <reference types="materialize-css" />
+/// <reference types="vite/client" />

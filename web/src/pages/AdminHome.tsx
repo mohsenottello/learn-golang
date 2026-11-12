@@ -67,23 +67,24 @@ export default function AdminHome() {
 
   return (
     <>
-      <div className="card"><div className="card-content">
-        <span className="card-title">Portrait</span>
+      <div className="card mb-3"><div className="card-body">
+        <h5 className="card-title">Portrait</h5>
         {site.has_portrait && <img src={`/api/site/portrait?v=${logoVersion}`} alt={site.name} style={{ maxHeight: 160, borderRadius: 12 }} />}
-        <div className="file-field input-field">
-          <div className="btn-flat teal-text"><span>Upload portrait</span><input type="file" accept="image/*" onChange={uploadPortrait} /></div>
-          <div className="file-path-wrapper" style={{ display: "none" }}><input className="file-path" type="text" /></div>
-        </div>
-        <p className="grey-text" style={{ fontSize: ".8rem" }}>The portrait is shared by both languages.</p>
+        <div className="mt-2"><label className="form-label small text-secondary">Upload portrait</label><input type="file" className="form-control form-control-sm" accept="image/*" onChange={uploadPortrait} /></div>
+        <p className="text-secondary" style={{ fontSize: ".8rem" }}>The portrait is shared by both languages.</p>
       </div></div>
 
       <div className="admin-lang-tabs">
-        {LANGS.map((l) => (
-          <button key={l.key} className={`btn-flat${lang === l.key ? " active" : ""}`} onClick={() => setLang(l.key)}>{l.label}</button>
-        ))}
-        <span className="right" style={{ display: "flex", gap: 4 }}>
-          <button className="btn-flat" onClick={copyFromOther} title="Start from the other language's texts">
-            <i className="material-icons left">content_copy</i>Copy from {otherLang.toUpperCase()}
+        <ul className="nav nav-tabs border-0 mb-0">
+          {LANGS.map((l) => (
+            <li key={l.key} className="nav-item">
+              <button className={`nav-link${lang === l.key ? " active" : ""}`} onClick={() => setLang(l.key)}>{l.label}</button>
+            </li>
+          ))}
+        </ul>
+        <span className="ms-auto d-flex gap-1">
+          <button className="btn btn-link" onClick={copyFromOther} title="Start from the other language's texts">
+            <i className="material-icons align-middle me-1">content_copy</i>Copy from {otherLang.toUpperCase()}
           </button>
           <TranslateButton from={otherLang} to={lang}
             texts={[
@@ -101,13 +102,13 @@ export default function AdminHome() {
       </div>
 
       {GROUPS.map((g) => (
-        <div key={g.title} className="card"><div className="card-content">
-          <span className="card-title">{g.title}</span>
+        <div key={g.title} className="card mb-3"><div className="card-body">
+          <h5 className="card-title">{g.title}</h5>
           {g.fields.map((f) => f.multiline ? (
-            <div key={f.key} className="input-field">
-              <textarea className="materialize-textarea" value={form[f.key] as string} style={{ minHeight: 100 }}
+            <div key={f.key} className="form-floating mb-3">
+              <textarea className="form-control" value={form[f.key] as string} style={{ height: 110 }} placeholder={f.label}
                 onChange={(e) => set(f.key)(e.target.value)} />
-              <label className="active">{f.label}</label>
+              <label>{f.label}</label>
             </div>
           ) : (
             <TextField key={f.key} label={f.label} type="text" value={form[f.key] as string} onChange={set(f.key)} />
@@ -115,36 +116,36 @@ export default function AdminHome() {
         </div></div>
       ))}
 
-      <div className="card"><div className="card-content">
-        <span className="card-title">Feature cards</span>
+      <div className="card mb-3"><div className="card-body">
+        <h5 className="card-title">Feature cards</h5>
         {form.features.map((f, i) => (
           <div key={i} className="row" style={{ marginBottom: 0, borderBottom: "1px solid #eee", paddingBottom: 8 }}>
-            <div className="col s6 m2"><TextField label="Icon" type="text" value={f.icon} onChange={(v) => setFeature(i, { icon: v })} /></div>
-            <div className="col s6 m2">
-              <label>Colour</label>
-              <select className="browser-default" value={f.color} onChange={(e) => setFeature(i, { color: e.target.value as Feature["color"] })}>
+            <div className="col-6 col-md-2"><TextField label="Icon" type="text" value={f.icon} onChange={(v) => setFeature(i, { icon: v })} /></div>
+            <div className="col-6 col-md-2">
+              <label className="form-label small">Colour</label>
+              <select className="form-select" value={f.color} onChange={(e) => setFeature(i, { color: e.target.value as Feature["color"] })}>
                 {COLORS.map((c) => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
-            <div className="col s12 m3"><TextField label="Title" type="text" value={f.title} onChange={(v) => setFeature(i, { title: v })} /></div>
-            <div className="col s10 m4"><TextField label="Text" type="text" value={f.text} onChange={(v) => setFeature(i, { text: v })} /></div>
-            <div className="col s2 m1">
-              <button className="btn-flat red-text" onClick={() => setForm({ ...form, features: form.features.filter((_, j) => j !== i) })}>
+            <div className="col-12 col-md-3"><TextField label="Title" type="text" value={f.title} onChange={(v) => setFeature(i, { title: v })} /></div>
+            <div className="col-10 col-md-4"><TextField label="Text" type="text" value={f.text} onChange={(v) => setFeature(i, { text: v })} /></div>
+            <div className="col-2 col-md-1">
+              <button className="btn btn-link text-danger" onClick={() => setForm({ ...form, features: form.features.filter((_, j) => j !== i) })}>
                 <i className="material-icons">delete</i>
               </button>
             </div>
           </div>
         ))}
         {form.features.length < 6 && (
-          <button className="btn-flat teal-text" onClick={() => setForm({ ...form, features: [...form.features, { icon: "star_outline", color: "teal", title: "", text: "" }] })}>
-            <i className="material-icons left">add</i>Add card
+          <button className="btn btn-link" onClick={() => setForm({ ...form, features: [...form.features, { icon: "star_outline", color: "teal", title: "", text: "" }] })}>
+            <i className="material-icons align-middle me-1">add</i>Add card
           </button>
         )}
-        <p className="grey-text" style={{ fontSize: ".8rem" }}>Icon names: <a href="https://fonts.google.com/icons?icon.set=Material+Icons" target="_blank" rel="noreferrer">Material Icons</a></p>
+        <p className="text-secondary" style={{ fontSize: ".8rem" }}>Icon names: <a href="https://fonts.google.com/icons?icon.set=Material+Icons" target="_blank" rel="noreferrer">Material Icons</a></p>
       </div></div>
 
-      <button className="btn teal" onClick={save}>Save {lang.toUpperCase()}</button>{" "}
-      <button className="btn-flat" onClick={reset}>Reset {lang.toUpperCase()} to defaults</button>
+      <button className="btn btn-primary" onClick={save}>Save {lang.toUpperCase()}</button>{" "}
+      <button className="btn btn-link" onClick={reset}>Reset {lang.toUpperCase()} to defaults</button>
     </>
   );
 }

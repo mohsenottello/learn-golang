@@ -17,14 +17,14 @@ export default function ForgotPassword() {
 
   return (
     <>
-      <span className="card-title">{t("forgot_title")}</span>
+      <h5 className="card-title">{t("forgot_title")}</h5>
       <p>{t("forgot_text")}</p>
       <form onSubmit={onSubmit}>
         <TextField label={t("f_email")} type="email" value={email} onChange={setEmail} />
-        <button className="btn teal waves-effect waves-light" type="submit" disabled={busy}>
-          {t("forgot_button")} <i className="material-icons right">send</i>
+        <button className="btn btn-primary" type="submit" disabled={busy}>
+          {t("forgot_button")} <i className="material-icons align-middle ms-1">send</i>
         </button>
-        <Link className="btn-flat waves-effect" to="/login">{t("back_to_login")}</Link>
+        <Link className="btn btn-link" to="/login">{t("back_to_login")}</Link>
       </form>
     </>
   );

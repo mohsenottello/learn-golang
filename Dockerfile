@@ -1,24 +1,25 @@
-# 1. React
-FROM node:22-alpine AS web
+# ---- frontend: runs natively on the build host ----
+FROM --platform=$BUILDPLATFORM node:22-alpine AS web
 WORKDIR /web
 COPY web/package*.json ./
 RUN npm ci
-COPY web ./
+COPY web/ .
 RUN npm run build
 
-# 2. Go
-FROM golang:1.27-alpine AS build
+# ---- go: native too, cross-compiles to the target ----
+FROM --platform=$BUILDPLATFORM golang:1.27-alpine AS build
+ARG TARGETOS TARGETARCH
 WORKDIR /src
-COPY go.mod go.su[m] ./
+COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
 COPY --from=web /web/dist ./web/dist
-RUN CGO_ENABLED=0 go build -ldflags="-s -w" -o /app ./cmd/server
+RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -ldflags="-s -w" -o /app ./cmd/server
 
-# 3. Runtime
+# ---- runtime: the only stage that is actually arm64 ----
 FROM alpine:3.20
-RUN apk add --no-cache ca-certificates
+RUN apk add --no-cache ca-certificates tzdata
 COPY --from=build /app /app
-EXPOSE 8080
 USER nobody
+EXPOSE 8080
 ENTRYPOINT ["/app"]

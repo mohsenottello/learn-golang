@@ -29,7 +29,7 @@ export default function Account() {
   return (
     <div className="editor">
       <SideNav
-        header={<>{user.name}<br /><small className="grey-text">{user.email}</small></>}
+        header={<>{user.name}<br /><small className="text-secondary">{user.email}</small></>}
         groups={GROUPS}
         active={section}
         onSelect={setSection}
