@@ -100,9 +100,8 @@ export type Resume = {
   user_id?: number; slug: string; published: boolean; default_lang: Lang;
   title: string; title_en: string; subtitle: string; subtitle_en: string; about: string; about_en: string;
   email: string; phone: string; location: string; linkedin: string; has_photo: boolean;
-  side_bg?: string; side_text?: string; main_bg?: string; main_text?: string; accent?: string;
-  updated_at?: string;
-};
+  side_bg?: string; side_text?: string; main_bg?: string; main_text?: string; accent?: string; locked: boolean; updated_at?: string };
+
 export type Software = { id: number; name: string; position: number };
 export type Language = { id: number; name: string; name_en: string; level: string; level_en: string; position: number };
 export type Education = {
@@ -116,7 +115,7 @@ export type Experience = {
 };
 export type FullResume = {
   resume: Resume; name: string; lang?: Lang;
-  software: Software[]; languages: Language[]; education: Education[]; experience: Experience[];
+  software: Software[]; languages: Language[]; education: Education[]; experience: Experience[]; hidden_experience: number
 };
 
 export type SectionKey = "software" | "languages" | "education" | "experience";
@@ -145,6 +144,7 @@ export const resume = {
   updateBullet: (expId: number, b: Bullet) => put<Bullet>(`/api/me/resume/experience/${expId}/bullets/${b.id}`, b),
   deleteBullet: (expId: number, id: number) => del<void>(`/api/me/resume/experience/${expId}/bullets/${id}`),
   reorderBullets: (expId: number, ids: number[]) => put<void>(`/api/me/resume/experience/${expId}/bullets-order`, { ids }),
-
+  unlock: (slug: string, password: string) => post<void>(`/api/resumes/${slug}/unlock`, { password }),
+  setAccess: (password: string) => put<Resume>("/api/me/resume/access", { password }),
   public: (slug: string, lang?: Lang) => get<FullResume>(`/api/resumes/${slug}${lang ? `?lang=${lang}` : ""}`),
 };

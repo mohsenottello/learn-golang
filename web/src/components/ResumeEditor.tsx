@@ -159,6 +159,7 @@ function ProfileEditor({ data, onChange }: { data: FullResume; onChange: (d: Ful
   const toast = useToast();
   const set = (k: keyof Resume) => (v: string) => setHeader({ ...header, [k]: v });
   const { site } = useSite();
+  const [access, setAccess] = useState("");
 
   async function save() {
     try {
@@ -180,6 +181,16 @@ function ProfileEditor({ data, onChange }: { data: FullResume; onChange: (d: Ful
     } catch (err) { toast((err as Error).message, "error"); }
   }
 
+  async function saveAccess(clear = false) {
+    try {
+      const r = await api.setAccess(clear ? "" : access);
+      setHeader({ ...header, locked: r.locked });
+      onChange({ ...data, resume: { ...data.resume, locked: r.locked } });
+      setAccess("");
+      toast(clear ? "Password removed — resume is fully public." : "Access password set.");
+    } catch (e) { toast((e as Error).message, "error"); }
+  }
+
   const pair = (label: string, key: "title" | "subtitle", hint: string) => (
     <div className="row">
       <div className="col-12 col-md-6"><TextField label={`${label} (DE)`} type="text" value={header[key]} onChange={set(key)} /></div>
@@ -189,88 +200,109 @@ function ProfileEditor({ data, onChange }: { data: FullResume; onChange: (d: Ful
   );
 
   return (
-    <div className="card mb-3">
-      <div className="card-body">
-        <h5 className="card-title">Profile</h5>
-        <p style={{ marginTop: 0 }}>
-          Public page:{" "}
-          {header.published
-            ? <Link to={`/${header.slug}`} target="_blank">/{header.slug}</Link>
-            : <span className="text-secondary">/{header.slug} (not published)</span>}
-        </p>
+    <>
+      <div className="card mb-3">
+        <div className="card-body">
+          <h5 className="card-title">Profile</h5>
+          <p style={{ marginTop: 0 }}>
+            Public page:{" "}
+            {header.published
+              ? <Link to={`/${header.slug}`} target="_blank">/{header.slug}</Link>
+              : <span className="text-secondary">/{header.slug} (not published)</span>}
+          </p>
 
-        <div className="row">
-          <div className="col-12 col-md-4 text-center">
-            {header.has_photo
-              ? <img src={`/api/me/resume/photo?v=${photoVersion}`} alt={site.name} className="rounded-circle img-fluid" style={{ width: 160, height: 160, objectFit: "cover" }} />
-              : <div className="rounded-circle bg-secondary-subtle" style={{ width: 160, height: 160, margin: "0 auto" }} />}
-            <div className="mt-2"><label className="form-label small text-secondary">Upload photo</label><input type="file" className="form-control form-control-sm" accept="image/*" onChange={uploadPhoto} /></div>
-          </div>
-          <div className="col-12 col-md-8">
-            <TextField label="URL slug" type="text" value={header.slug} onChange={(v) => set("slug")(v.toLowerCase())} />
-            <label className="form-label">Default language of the public page</label>
-            <select className="form-select mb-3" value={header.default_lang}
-              onChange={(e) => setHeader({ ...header, default_lang: e.target.value as Lang })}>
-              <option value="de">Deutsch</option>
-              <option value="en">English</option>
-            </select>
-            <div className="form-check"><input type="checkbox" className="form-check-input" id="published" checked={header.published}
-                  onChange={(e) => setHeader({ ...header, published: e.target.checked })} /><label className="form-check-label" htmlFor="published">Published (visible to anyone with the link)</label></div>
-          </div>
-        </div>
-
-        <div style={{ marginTop: "1rem" }}>
-          <TranslateButton from="de" to="en"
-            texts={[header.title, header.subtitle, header.about]}
-            onResult={([t, s, a]) => setHeader({ ...header, title_en: t, subtitle_en: s, about_en: a })} />
-          <TranslateButton from="en" to="de"
-            texts={[header.title_en, header.subtitle_en, header.about_en]}
-            onResult={([t, s, a]) => setHeader({ ...header, title: t, subtitle: s, about: a })} />
-        </div>
-
-        {pair("Title", "title", "e.g. Architektin")}
-        {pair("Subtitle", "subtitle", "e.g. Bauvorlageberechtigt · Kammer Nr. 157104")}
-
-        <div className="row">
-          <div className="col-12 col-md-6"><TextField label="Email" type="text" value={header.email} onChange={set("email")} /></div>
-          <div className="col-12 col-md-6"><TextField label="Phone" type="text" value={header.phone} onChange={set("phone")} /></div>
-          <div className="col-12 col-md-6"><TextField label="Location" type="text" value={header.location} onChange={set("location")} /></div>
-          <div className="col-12 col-md-6"><TextField label="LinkedIn URL" type="text" value={header.linkedin} onChange={set("linkedin")} /></div>
-          <div className="col-12 col-md-6">
-            <div className="form-floating mb-3">
-              <textarea className="form-control" value={header.about} style={{ height: 160 }} placeholder="About me (DE)" onChange={(e) => set("about")(e.target.value)} />
-              <label>About me (DE)</label>
+          <div className="row">
+            <div className="col-12 col-md-4 text-center">
+              {header.has_photo
+                ? <img src={`/api/me/resume/photo?v=${photoVersion}`} alt={site.name} className="rounded-circle img-fluid" style={{ width: 160, height: 160, objectFit: "cover" }} />
+                : <div className="rounded-circle bg-secondary-subtle" style={{ width: 160, height: 160, margin: "0 auto" }} />}
+              <div className="mt-2"><label className="form-label small text-secondary">Upload photo</label><input type="file" className="form-control form-control-sm" accept="image/*" onChange={uploadPhoto} /></div>
+            </div>
+            <div className="col-12 col-md-8">
+              <TextField label="URL slug" type="text" value={header.slug} onChange={(v) => set("slug")(v.toLowerCase())} />
+              <label className="form-label">Default language of the public page</label>
+              <select className="form-select mb-3" value={header.default_lang}
+                onChange={(e) => setHeader({ ...header, default_lang: e.target.value as Lang })}>
+                <option value="de">Deutsch</option>
+                <option value="en">English</option>
+              </select>
+              <div className="form-check"><input type="checkbox" className="form-check-input" id="published" checked={header.published}
+                    onChange={(e) => setHeader({ ...header, published: e.target.checked })} /><label className="form-check-label" htmlFor="published">Published (visible to anyone with the link)</label></div>
             </div>
           </div>
-          <div className="col-12 col-md-6">
-            <div className="form-floating mb-3">
-              <textarea className="form-control" value={header.about_en} style={{ height: 160 }} placeholder="About me (EN)" onChange={(e) => set("about_en")(e.target.value)} />
-              <label>About me (EN)</label>
+
+          <div style={{ marginTop: "1rem" }}>
+            <TranslateButton from="de" to="en"
+              texts={[header.title, header.subtitle, header.about]}
+              onResult={([t, s, a]) => setHeader({ ...header, title_en: t, subtitle_en: s, about_en: a })} />
+            <TranslateButton from="en" to="de"
+              texts={[header.title_en, header.subtitle_en, header.about_en]}
+              onResult={([t, s, a]) => setHeader({ ...header, title: t, subtitle: s, about: a })} />
+          </div>
+
+          {pair("Title", "title", "e.g. Architektin")}
+          {pair("Subtitle", "subtitle", "e.g. Bauvorlageberechtigt · Kammer Nr. 157104")}
+
+          <div className="row">
+            <div className="col-12 col-md-6"><TextField label="Email" type="text" value={header.email} onChange={set("email")} /></div>
+            <div className="col-12 col-md-6"><TextField label="Phone" type="text" value={header.phone} onChange={set("phone")} /></div>
+            <div className="col-12 col-md-6"><TextField label="Location" type="text" value={header.location} onChange={set("location")} /></div>
+            <div className="col-12 col-md-6"><TextField label="LinkedIn URL" type="text" value={header.linkedin} onChange={set("linkedin")} /></div>
+            <div className="col-12 col-md-6">
+              <div className="form-floating mb-3">
+                <textarea className="form-control" value={header.about} style={{ height: 160 }} placeholder="About me (DE)" onChange={(e) => set("about")(e.target.value)} />
+                <label>About me (DE)</label>
+              </div>
+            </div>
+            <div className="col-12 col-md-6">
+              <div className="form-floating mb-3">
+                <textarea className="form-control" value={header.about_en} style={{ height: 160 }} placeholder="About me (EN)" onChange={(e) => set("about_en")(e.target.value)} />
+                <label>About me (EN)</label>
+              </div>
             </div>
           </div>
-        </div>
 
-        <h6 className="mt-4">Colours</h6>
-        <div className="row">
-          <div className="col-12 col-md-7">
-            <div className="row">
-              {COLOR_FIELDS.map((c) => (
-                <div key={c.key} className="col-6" style={{ marginBottom: 12 }}>
-                  <label className="form-label d-block small">{c.label}</label>
-                  <input type="color" className="form-control form-control-color" value={header[c.key] ?? DEFAULT_COLORS[c.key]} onChange={(e) => set(c.key)(e.target.value)} />
-                </div>
-              ))}
+          <h6 className="mt-4">Colours</h6>
+          <div className="row">
+            <div className="col-12 col-md-7">
+              <div className="row">
+                {COLOR_FIELDS.map((c) => (
+                  <div key={c.key} className="col-6" style={{ marginBottom: 12 }}>
+                    <label className="form-label d-block small">{c.label}</label>
+                    <input type="color" className="form-control form-control-color" value={header[c.key] ?? DEFAULT_COLORS[c.key]} onChange={(e) => set(c.key)(e.target.value)} />
+                  </div>
+                ))}
+              </div>
+              <button type="button" className="btn btn-link" onClick={() => setHeader({ ...header, ...DEFAULT_COLORS })}>
+                <i className="material-icons align-middle me-1">restart_alt</i>Reset to defaults
+              </button>
             </div>
-            <button type="button" className="btn btn-link" onClick={() => setHeader({ ...header, ...DEFAULT_COLORS })}>
-              <i className="material-icons align-middle me-1">restart_alt</i>Reset to defaults
-            </button>
+            <div className="col-12 col-md-5"><ThemePreview r={header} /></div>
           </div>
-          <div className="col-12 col-md-5"><ThemePreview r={header} /></div>
-        </div>
 
-        <button className="btn btn-primary mt-3" onClick={save}>Save</button>
+          <button className="btn btn-primary mt-3" onClick={save}>Save</button>
+        </div>
       </div>
-    </div>
+
+      <div className="card mb-3">
+        <div className="card-body">
+          <h5 className="card-title">Access password</h5>
+          <p className="text-secondary small">
+            {header.locked
+              ? "Visitors see your profile and the most recent position; the rest needs this password."
+              : "Optional. If set, visitors see only your profile and the most recent position until they enter it."}
+          </p>
+          <div className="input-group" style={{ maxWidth: 420 }}>
+            <input type="text" className="form-control" placeholder={header.locked ? "New password" : "Password"}
+              value={access} onChange={(e) => setAccess(e.target.value)} />
+            <button type="button" className="btn btn-primary" disabled={access.length < 4} onClick={() => saveAccess()}>Set</button>
+            {header.locked && (
+              <button type="button" className="btn btn-outline-secondary" onClick={() => saveAccess(true)}>Remove</button>
+            )}
+          </div>
+        </div>
+      </div>
+    </>
   );
 }
 

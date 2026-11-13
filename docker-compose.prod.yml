@@ -15,6 +15,7 @@ services:
       DEEPL_API_KEY: ${DEEPL_API_KEY}
       GOTENBERG_URL: http://gotenberg:3000
       INTERNAL_URL: ${BASE_URL}
+      APP_SECRET: ${APP_SECRET}
     depends_on:
       db:
         condition: service_healthy

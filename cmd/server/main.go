@@ -24,6 +24,10 @@ import (
 
 func main() {
 	cfg := config.Load()
+	if cfg.Secret == "" {
+		log.Fatal("APP_SECRET is required")
+	}
+
 	ctx := context.Background()
 
 	st, err := store.Open(ctx, cfg.DatabaseURL)
@@ -57,6 +61,7 @@ func main() {
 			Static:       web.Dist,
 			GotenbergURL: cfg.GotenbergURL,
 			InternalURL:  cfg.InternalURL,
+			Secret:       cfg.Secret,
 		}),
 		ReadHeaderTimeout: 10 * time.Second,
 	}

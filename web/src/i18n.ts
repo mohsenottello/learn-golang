@@ -68,6 +68,9 @@ const de = {
   cv_link: "Link",
   cv_pdf: "PDF",
   cv_notfound: "Kein veröffentlichter Lebenslauf unter",
+  cv_locked: "{n} weitere Stationen sind passwortgeschützt.",
+  cv_password: "Passwort",
+  cv_unlock: "Freischalten",
   locale: "de-DE",
 };
 
@@ -130,6 +133,9 @@ const en: typeof de = {
   cv_link: "Link",
   cv_pdf: "PDF",
   cv_notfound: "No published resume at",
+  cv_locked: "{n} more entries are password-protected.",
+  cv_password: "Password",
+  cv_unlock: "Unlock",
   locale: "en-GB",
 };
 

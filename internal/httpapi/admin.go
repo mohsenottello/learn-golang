@@ -109,3 +109,55 @@ func (h *handlers) adminSetUserPassword(w http.ResponseWriter, r *http.Request) 
 	h.Store.DeleteAllUserSessions(r.Context(), id) // they must log in again everywhere
 	w.WriteHeader(http.StatusNoContent)
 }
+
+// POST /api/resumes/{slug}/unlock {password}
+func (h *handlers) resumeUnlock(w http.ResponseWriter, r *http.Request) {
+	res, err := h.Store.ResumeBySlug(r.Context(), r.PathValue("slug"))
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+	var in struct {
+		Password string `json:"password"`
+	}
+	if err := readJSON(w, r, &in); err != nil {
+		writeError(w, 400, "invalid request")
+		return
+	}
+	if res.AccessHash == "" || bcrypt.CompareHashAndPassword([]byte(res.AccessHash), []byte(in.Password)) != nil {
+		writeError(w, http.StatusUnauthorized, "Wrong password.")
+		return
+	}
+	h.setAccessCookie(w, res)
+	w.WriteHeader(http.StatusNoContent)
+}
+
+// PUT /api/me/resume/access {password}   ("" clears)
+func (h *handlers) setResumeAccess(w http.ResponseWriter, r *http.Request) {
+	var in struct {
+		Password string `json:"password"`
+	}
+	if err := readJSON(w, r, &in); err != nil {
+		writeError(w, http.StatusBadRequest, "invalid request")
+		return
+	}
+	hash := ""
+	if in.Password != "" {
+		if len(in.Password) < 4 {
+			writeError(w, http.StatusBadRequest, "Password must be at least 4 characters.")
+			return
+		}
+		b, err := bcrypt.GenerateFromPassword([]byte(in.Password), bcrypt.DefaultCost)
+		if err != nil {
+			serverError(w, r, err)
+			return
+		}
+		hash = string(b)
+	}
+	if err := h.Store.SetResumeAccess(r.Context(), currentUser(r).ID, hash); err != nil {
+		serverError(w, r, err)
+		return
+	}
+	res, err := h.Store.ResumeByUser(r.Context(), currentUser(r).ID)
+	h.writeItemResult(w, r, res, err)
+}

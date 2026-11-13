@@ -19,6 +19,7 @@ type Config struct {
 	AdminPassword string
 	GotenbergURL  string // "" = PDF export disabled
 	InternalURL   string
+	Secret        string
 }
 
 func Load() Config {
@@ -38,6 +39,7 @@ func Load() Config {
 		DeepLKey:      os.Getenv("DEEPL_API_KEY"),
 		GotenbergURL:  os.Getenv("GOTENBERG_URL"),
 		InternalURL:   env("INTERNAL_URL", "http://localhost:8080"),
+		Secret:        os.Getenv("APP_SECRET"),
 	}
 }
 

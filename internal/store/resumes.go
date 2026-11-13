@@ -24,11 +24,13 @@ type Resume struct {
 	Location    string    `json:"location"`
 	LinkedIn    string    `json:"linkedin"`
 	HasPhoto    bool      `json:"has_photo"`
-	SideBg			string    `json:"side_bg"`
-	SideText		string    `json:"side_text"`
-	MainBg			string    `json:"main_bg"`
-	MainText		string    `json:"main_text"`
-	Accent			string    `json:"accent"`
+	SideBg      string    `json:"side_bg"`
+	SideText    string    `json:"side_text"`
+	MainBg      string    `json:"main_bg"`
+	MainText    string    `json:"main_text"`
+	Accent      string    `json:"accent"`
+	AccessHash  string    `json:"-"`      // bcrypt; never serialised
+	Locked      bool      `json:"locked"` // derived: AccessHash != ""
 	UpdatedAt   time.Time `json:"updated_at"`
 }
 
@@ -43,17 +45,18 @@ type AdminResume struct {
 
 const resumeCols = `user_id, slug, published, default_lang, title, title_en, subtitle, subtitle_en,
 	about, about_en, email, phone, location, linkedin, photo IS NOT NULL, updated_at,
-	side_bg, side_text, main_bg, main_text, accent`
+	side_bg, side_text, main_bg, main_text, accent, access_hash`
 
 func scanResume(row interface{ Scan(...any) error }) (*Resume, error) {
 	var r Resume
 	err := row.Scan(&r.UserID, &r.Slug, &r.Published, &r.DefaultLang, &r.Title, &r.TitleEn,
 		&r.Subtitle, &r.SubtitleEn, &r.About, &r.AboutEn,
 		&r.Email, &r.Phone, &r.Location, &r.LinkedIn, &r.HasPhoto, &r.UpdatedAt,
-		&r.SideBg, &r.SideText, &r.MainBg, &r.MainText, &r.Accent)
+		&r.SideBg, &r.SideText, &r.MainBg, &r.MainText, &r.Accent, &r.AccessHash)
 	if err != nil {
 		return nil, translate(err)
 	}
+	r.Locked = r.AccessHash != ""
 	return &r, nil
 }
 
@@ -121,7 +124,6 @@ func (s *Store) ResumePhotoByUser(ctx context.Context, userID int64) ([]byte, st
 	return data, ct.String, nil
 }
 
-
 func (s *Store) ListResumesForAdmin(ctx context.Context) ([]AdminResume, error) {
 	rows, err := s.db.QueryContext(ctx, `
 		SELECT r.user_id, u.email, u.name, r.slug, r.published, r.updated_at
@@ -147,4 +149,9 @@ func (s *Store) SetResumePublished(ctx context.Context, userID int64, published 
 		return err
 	}
 	return rowsAffectedOrNotFound(res)
+}
+
+func (s *Store) SetResumeAccess(ctx context.Context, userID int64, hash string) error {
+	_, err := s.db.ExecContext(ctx, `UPDATE resumes SET access_hash=$2, updated_at=now() WHERE user_id=$1`, userID, hash)
+	return err
 }

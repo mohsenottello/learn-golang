@@ -43,13 +43,14 @@ var validLangs = map[string]bool{"de": true, "en": true}
 
 // FullResume is what the editor and the public page both consume.
 type FullResume struct {
-	Resume     *store.Resume      `json:"resume"`
-	Name       string             `json:"name"`
-	Lang       string             `json:"lang,omitempty"` // set on public (localized) responses
-	Software   []store.Software   `json:"software"`
-	Languages  []store.Language   `json:"languages"`
-	Education  []store.Education  `json:"education"`
-	Experience []store.Experience `json:"experience"`
+	Resume           *store.Resume      `json:"resume"`
+	Name             string             `json:"name"`
+	Lang             string             `json:"lang,omitempty"` // set on public (localized) responses
+	Software         []store.Software   `json:"software"`
+	Languages        []store.Language   `json:"languages"`
+	Education        []store.Education  `json:"education"`
+	Experience       []store.Experience `json:"experience"`
+	HiddenExperience int                `json:"hidden_experience"`
 }
 
 func (h *handlers) loadFull(r *http.Request, res *store.Resume, name string) (*FullResume, error) {
@@ -135,10 +136,10 @@ func (h *handlers) updateMyResume(w http.ResponseWriter, r *http.Request) {
 	var hexColor = regexp.MustCompile(`^#[0-9a-fA-F]{6}$`)
 
 	for _, c := range []string{in.SideBg, in.SideText, in.MainBg, in.MainText, in.Accent} {
-			if !hexColor.MatchString(c) {
-					writeError(w, http.StatusBadRequest, "Colours must be hex like #7f7a72.")
-					return
-			}
+		if !hexColor.MatchString(c) {
+			writeError(w, http.StatusBadRequest, "Colours must be hex like #7f7a72.")
+			return
+		}
 	}
 	in.UserID = currentUser(r).ID
 	if !h.ensureResume(w, r) {

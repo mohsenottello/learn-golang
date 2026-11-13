@@ -2,14 +2,24 @@ package httpapi
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"mime/multipart"
 	"net/http"
+	"net/url"
 
 	"github.com/mohsenottello/golang/internal/store"
 )
+
+func mustHost(raw string) string {
+	u, err := url.Parse(raw)
+	if err != nil {
+		return ""
+	}
+	return u.Hostname()
+}
 
 // GET /api/resumes/{slug}/pdf?lang=de|en
 func (h *handlers) resumePDF(w http.ResponseWriter, r *http.Request) {
@@ -48,6 +58,18 @@ func (h *handlers) resumePDF(w http.ResponseWriter, r *http.Request) {
 	} {
 		mw.WriteField(k, v)
 	}
+
+	if !h.unlocked(r, res) {
+		writeError(w, http.StatusForbidden, "Enter the password to download the PDF.")
+		return
+	}
+
+	if c, err := r.Cookie(accessCookieName(res.Slug)); err == nil && h.unlocked(r, res) {
+		host := mustHost(h.InternalURL) // url.Parse(...).Hostname()
+		cookies, _ := json.Marshal([]map[string]string{{"name": c.Name, "value": c.Value, "domain": host, "path": "/"}})
+		mw.WriteField("cookies", string(cookies))
+	}
+
 	mw.Close()
 
 	req, _ := http.NewRequestWithContext(r.Context(), "POST", h.GotenbergURL+"/forms/chromium/convert/url", &body)

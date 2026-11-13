@@ -20,6 +20,7 @@ type Deps struct {
 	GotenbergURL string // "" = PDF export disabled
 	InternalURL  string // how Gotenberg's Chrome reaches this app, e.g. http://app:8080
 	Static       fs.FS
+	Secret       string
 }
 
 type handlers struct{ Deps }
@@ -70,6 +71,7 @@ func NewRouter(d Deps) http.Handler {
 	mux.Handle("DELETE /api/me/resume/experience/{id}/bullets/{bid}", user(h.deleteBullet))
 	mux.Handle("PUT /api/me/resume/experience/{id}/bullets-order", user(h.reorderBullets))
 	mux.HandleFunc("GET /api/resumes/{slug}/pdf", h.resumePDF)
+
 	// Public resumes
 	mux.HandleFunc("GET /api/resumes/{slug}", h.publicResume)
 	mux.HandleFunc("GET /api/resumes/{slug}/photo", h.publicPhoto)
@@ -80,6 +82,10 @@ func NewRouter(d Deps) http.Handler {
 	mux.Handle("DELETE /api/admin/users/{id}", admin(h.deleteUser))
 	mux.Handle("GET /api/admin/resumes", admin(h.adminListResumes))
 	mux.Handle("PUT /api/admin/resumes/{id}/published", admin(h.adminSetPublished))
+	// POST /api/resumes/{slug}/unlock {password}
+	mux.HandleFunc("POST /api/resumes/{slug}/unlock", h.resumeUnlock)
+	// PUT /api/me/resume/access {password}   ("" clears)
+	mux.Handle("PUT /api/me/resume/access", user(h.setResumeAccess))
 
 	mux.HandleFunc("GET /api/site", h.getSite)
 	mux.HandleFunc("GET /api/site/logo", h.siteLogo)

@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { FullResume, Lang, resume as api } from "../api";
 import { STRINGS } from "../i18n";
 import { useLang } from "../lang";
 import { useSite } from "../site";
+import { useToast } from "../toast";
 
 export default function PublicResume({ featured = false }: { featured?: boolean }) {
   const params = useParams();
@@ -19,7 +20,17 @@ export default function PublicResume({ featured = false }: { featured?: boolean 
   const requested: Lang = langParam === "de" || langParam === "en" ? (langParam as Lang) : siteLang;
   const [data, setData] = useState<FullResume | null>(null);
   const [notFound, setNotFound] = useState(false);
+    const [pw, setPw] = useState("");
+  const toast = useToast();
 
+  async function unlock(e: FormEvent) {
+    e.preventDefault();
+    try {
+      await api.unlock(slug, pw);
+      setPw("");
+      setData(await api.public(slug, requested));
+    } catch (err) { toast((err as Error).message, "error"); }
+  }
   useEffect(() => {
     if (!slug) return;
     setData(null);
@@ -60,9 +71,11 @@ export default function PublicResume({ featured = false }: { featured?: boolean 
               <Link to={`${basePath}/en`} className={lang === "en" ? "active" : ""} onClick={() => setSiteLang("en")}>EN</Link>
             </>
           )}
-          <a className="btn btn-link btn-sm" href={`/api/resumes/${slug}/pdf?lang=${lang}`}>
-            <i className="material-icons align-middle me-1">picture_as_pdf</i>{S.cv_pdf}
-          </a>
+          {data.hidden_experience === 0 && (
+            <a className="btn btn-link btn-sm" href={`/api/resumes/${slug}/pdf?lang=${lang}`}>
+              <i className="material-icons align-middle me-1">picture_as_pdf</i>{S.cv_pdf}
+            </a>
+          )}
         </div>
       )}
       <div className="cv" lang={lang} style={{
@@ -112,7 +125,7 @@ export default function PublicResume({ featured = false }: { featured?: boolean 
         </aside>
 
         <main className="cv-main">
-          {data.experience.length > 0 && <h5 className="cv-main-title">{L.experience}</h5>}
+          {(data.experience.length > 0 || data.hidden_experience > 0) && <h5 className="cv-main-title">{L.experience}</h5>}
           {data.experience.map((x) => (
             <article key={x.id} className="cv-job">
               <div className="cv-job-head">
@@ -133,6 +146,27 @@ export default function PublicResume({ featured = false }: { featured?: boolean 
               )}
             </article>
           ))}
+
+          {data.hidden_experience > 0 && (
+            <div className="cv-locked">
+              <div className="cv-locked-blur">
+                {Array.from({ length: Math.min(data.hidden_experience, 3) }).map((_, i) => (
+                  <article key={i} className="cv-job" aria-hidden>
+                    <div className="cv-job-head"><div><strong>████████ ████</strong><div className="cv-role">█████████</div></div><div className="cv-job-meta"><strong>████ – ████</strong></div></div>
+                    <ul className="cv-bullets"><li>██████████ ████████ ███████████ ███</li><li>████████ ██████ ████████████</li></ul>
+                  </article>
+                ))}
+              </div>
+              <form className="cv-unlock" onSubmit={unlock}>
+                <i className="material-icons">lock</i>
+                <p>{S.cv_locked.replace("{n}", String(data.hidden_experience))}</p>
+                <div className="input-group">
+                  <input type="password" className="form-control" placeholder={S.cv_password} value={pw} onChange={(e) => setPw(e.target.value)} />
+                  <button className="btn btn-primary" disabled={!pw}>{S.cv_unlock}</button>
+                </div>
+              </form>
+            </div>
+          )}
         </main>
       </div>
     </>

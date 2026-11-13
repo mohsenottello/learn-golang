@@ -70,6 +70,12 @@ func (h *handlers) publicResume(w http.ResponseWriter, r *http.Request) {
 		serverError(w, r, err)
 		return
 	}
+
+	if !h.unlocked(r, full.Resume) {
+		full.HiddenExperience = len(full.Experience)
+		full.Experience = []store.Experience{}
+	}
+
 	lang := r.URL.Query().Get("lang")
 	if !validLangs[lang] {
 		lang = res.DefaultLang
