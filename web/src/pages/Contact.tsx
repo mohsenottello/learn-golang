@@ -12,7 +12,7 @@ export default function Contact() {
       {text && <p style={{ whiteSpace: "pre-line" }}>{text}</p>}
       {site.contact_email && (
         <a className="btn btn-primary" href={`mailto:${site.contact_email}`}>
-          <i className="material-icons align-middle me-1">mail</i>{site.contact_email}
+          <i className="material-icons align-middle me-1">mail</i>{t("contact_send")}
         </a>
       )}
       {!text && !site.contact_email && <p className="text-secondary">{t("contact_empty")}</p>}
