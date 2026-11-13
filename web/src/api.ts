@@ -119,6 +119,8 @@ export type FullResume = {
 };
 
 export type SectionKey = "software" | "languages" | "education" | "experience";
+export type LockedResume = { locked: true; name: string; has_photo: boolean };
+
 type ItemOf<K extends SectionKey> =
   K extends "software" ? Software : K extends "languages" ? Language : K extends "education" ? Education : Experience;
 
@@ -146,5 +148,5 @@ export const resume = {
   reorderBullets: (expId: number, ids: number[]) => put<void>(`/api/me/resume/experience/${expId}/bullets-order`, { ids }),
   unlock: (slug: string, password: string) => post<void>(`/api/resumes/${slug}/unlock`, { password }),
   setAccess: (password: string) => put<Resume>("/api/me/resume/access", { password }),
-  public: (slug: string, lang?: Lang) => get<FullResume>(`/api/resumes/${slug}${lang ? `?lang=${lang}` : ""}`),
+  public: (slug: string, lang?: Lang) => get<FullResume | LockedResume>(`/api/resumes/${slug}${lang ? `?lang=${lang}` : ""}`),
 };

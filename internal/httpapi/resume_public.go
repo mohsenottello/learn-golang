@@ -65,15 +65,16 @@ func (h *handlers) publicResume(w http.ResponseWriter, r *http.Request) {
 		serverError(w, r, err)
 		return
 	}
+
+	if !h.unlocked(r, res) {
+		writeJSON(w, http.StatusOK, map[string]any{"locked": true, "name": owner.Name, "has_photo": res.HasPhoto})
+		return
+	}
+
 	full, err := h.loadFull(r, res, owner.Name)
 	if err != nil {
 		serverError(w, r, err)
 		return
-	}
-
-	if !h.unlocked(r, full.Resume) {
-		full.HiddenExperience = len(full.Experience)
-		full.Experience = []store.Experience{}
 	}
 
 	lang := r.URL.Query().Get("lang")
