@@ -117,11 +117,8 @@ p { color: var(--muted); }
 /* Footer */
 footer { background: #171d33; padding: 38px 0 22px; }
 .footer-brand { color: #fff; font-size: 18px; font-weight: 800; }
-.footer-brand i { color: #a5a0ff; vertical-align: middle; margin-right: 7px; }
+footer i { color: #a5a0ff; vertical-align: middle; margin-right: 7px; }
 footer p { color: #b7bfd5; font-size: 12px; }
-.footer-links { display: flex; flex-wrap: wrap; gap: 22px; justify-content: flex-end; }
-.footer-links a { color: #dce0f3; font-size: 12px; }
-.footer-links a:hover { color: #c4b5fd; }
 .footer-bottom { border-top: 1px solid rgba(255,255,255,.1); margin-top: 25px; padding-top: 15px; }
 .footer-bottom p { margin: 0; }
 

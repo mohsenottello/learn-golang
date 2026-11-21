@@ -150,3 +150,12 @@ export const resume = {
   setAccess: (password: string) => put<Resume>("/api/me/resume/access", { password }),
   public: (slug: string, lang?: Lang) => get<FullResume | LockedResume>(`/api/resumes/${slug}${lang ? `?lang=${lang}` : ""}`),
 };
+
+export type Watch = { id: number; symbol: string; pct: number; ref_price: number; ref_time: string };
+export type Alerts = { enabled: boolean; telegram_linked: boolean; link_code: string; bot_username: string; watches: Watch[] };
+export const alerts = {
+  get: () => get<Alerts>("/api/me/alerts"),
+  addWatch: (symbol: string, pct: number) => post<Watch>("/api/me/alerts/watches", { symbol, pct }),
+  deleteWatch: (id: number) => del<void>(`/api/me/alerts/watches/${id}`),
+  unlink: () => del<void>("/api/me/alerts/telegram"),
+};

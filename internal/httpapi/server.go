@@ -7,8 +7,10 @@ import (
 	"io/fs"
 	"net/http"
 
+	"github.com/mohsenottello/golang/internal/crypto"
 	"github.com/mohsenottello/golang/internal/mail"
 	"github.com/mohsenottello/golang/internal/store"
+	"github.com/mohsenottello/golang/internal/telegram"
 	"github.com/mohsenottello/golang/internal/translate"
 )
 
@@ -21,6 +23,9 @@ type Deps struct {
 	InternalURL  string // how Gotenberg's Chrome reaches this app, e.g. http://app:8080
 	Static       fs.FS
 	Secret       string
+	Telegram     *telegram.Client
+	BotUsername  string
+	Prices       *crypto.Client
 }
 
 type handlers struct{ Deps }
@@ -107,6 +112,11 @@ func NewRouter(d Deps) http.Handler {
 	mux.HandleFunc("GET /sitemap.xml", h.sitemap)
 	// Translation
 	mux.Handle("POST /api/translate", user(h.translateTexts))
+
+	mux.Handle("GET /api/me/alerts", user(h.getAlerts))
+	mux.Handle("POST /api/me/alerts/watches", user(h.addWatch))
+	mux.Handle("DELETE /api/me/alerts/watches/{id}", user(h.deleteWatch))
+	mux.Handle("DELETE /api/me/alerts/telegram", user(h.unlinkTelegram))
 
 	return recoverPanic(logRequests(mux))
 }

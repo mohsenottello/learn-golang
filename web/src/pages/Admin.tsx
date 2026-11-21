@@ -7,9 +7,10 @@ import AdminUsers from "./AdminUsers";
 import AdminResumes from "./AdminResumes";
 import AdminSite from "./AdminSite";
 import AdminHome from "./AdminHome";
+import Alerts from "./Alerts";
 
 
-type AdminSection = "home" | "users" | "resumes" | "site";
+type AdminSection = "home" | "users" | "resumes" | "site" | "alerts";
 type Section = ResumeSection | AdminSection;
 
 const ADMIN_SECTIONS: { key: AdminSection; label: string; icon: string }[] = [
@@ -17,7 +18,9 @@ const ADMIN_SECTIONS: { key: AdminSection; label: string; icon: string }[] = [
   { key: "users", label: "Users", icon: "people" },
   { key: "resumes", label: "Resumes", icon: "description" },
   { key: "site", label: "Website", icon: "language" },
+  { key: "alerts", label: "Crypto alerts", icon: "notifications" },
 ];
+
 
 export default function Admin() {
   const { user, loading, logout } = useAuth();
@@ -64,6 +67,7 @@ export default function Admin() {
             {section === "users" && <AdminUsers />}
             {section === "resumes" && <AdminResumes />}
             {section === "site" && <AdminSite />}
+            {section === "alerts" && <Alerts />}
           </>
         )}
       </section>

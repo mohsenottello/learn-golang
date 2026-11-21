@@ -20,6 +20,9 @@ type Config struct {
 	GotenbergURL  string // "" = PDF export disabled
 	InternalURL   string
 	Secret        string
+	// Telegram bot. If set, users can link their account to a Telegram chat.
+	TelegramToken string
+	BotUsername   string
 }
 
 func Load() Config {
@@ -40,6 +43,8 @@ func Load() Config {
 		GotenbergURL:  os.Getenv("GOTENBERG_URL"),
 		InternalURL:   env("INTERNAL_URL", "http://localhost:8080"),
 		Secret:        os.Getenv("APP_SECRET"),
+		TelegramToken: os.Getenv("TELEGRAM_BOT_TOKEN"),
+		BotUsername:   os.Getenv("TELEGRAM_BOT_USERNAME"),
 	}
 }
 

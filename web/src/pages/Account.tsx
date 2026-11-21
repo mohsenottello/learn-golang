@@ -4,12 +4,14 @@ import { useAuth } from "../auth";
 import SideNav, { NavGroup } from "../components/SideNav";
 import ResumeEditor, { RESUME_SECTIONS, ResumeSection } from "../components/ResumeEditor";
 import AccountSettings from "./AccountSettings";
+import Alerts from "./Alerts";
 
-type Section = ResumeSection | "account";
+type Section = ResumeSection | "account" | "alerts";
 
 const GROUPS: NavGroup<Section>[] = [
   { title: "My resume", items: RESUME_SECTIONS },
   { title: "Settings", items: [{ key: "account", label: "Account", icon: "settings" }] },
+  { title: "Cryptos", items: [{ key: "alerts", label: "Alerts", icon: "notifications" }] },
 ];
 
 export default function Account() {
@@ -36,7 +38,15 @@ export default function Account() {
         footer={<a href="#logout" onClick={(e) => { e.preventDefault(); logout().finally(() => navigate("/login")); }}>Log out</a>}
       />
       <section className="editor-main">
-        {section === "account" ? <AccountSettings /> : <ResumeEditor section={section} />}
+        {section === "account" && <AccountSettings />}
+        {section === "account" && <Alerts />}
+        {section !== "account" && section !== "alerts" && <ResumeEditor section={section} />}
+      </section>
+
+      <section className="editor-main">
+        {section === "account" ? <AccountSettings />
+          : section === "alerts" ? <Alerts />
+          : <ResumeEditor section={section} />}
       </section>
     </div>
   );

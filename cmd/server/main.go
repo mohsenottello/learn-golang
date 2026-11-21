@@ -14,10 +14,13 @@ import (
 
 	"golang.org/x/crypto/bcrypt"
 
+	"github.com/mohsenottello/golang/internal/alerts"
 	"github.com/mohsenottello/golang/internal/config"
+	"github.com/mohsenottello/golang/internal/crypto"
 	"github.com/mohsenottello/golang/internal/httpapi"
 	"github.com/mohsenottello/golang/internal/mail"
 	"github.com/mohsenottello/golang/internal/store"
+	"github.com/mohsenottello/golang/internal/telegram"
 	"github.com/mohsenottello/golang/internal/translate"
 	"github.com/mohsenottello/golang/web"
 )
@@ -35,6 +38,10 @@ func main() {
 		log.Fatal("store: ", err)
 	}
 	defer st.Close()
+
+	tg := telegram.New(cfg.TelegramToken)
+	px := crypto.New()
+	go alerts.Run(ctx, st, tg, px)
 
 	if err := st.Migrate(); err != nil {
 		log.Fatal("migrate: ", err)
@@ -62,6 +69,9 @@ func main() {
 			GotenbergURL: cfg.GotenbergURL,
 			InternalURL:  cfg.InternalURL,
 			Secret:       cfg.Secret,
+			Telegram:     tg,
+			Prices:       px,
+			BotUsername:  cfg.BotUsername,
 		}),
 		ReadHeaderTimeout: 10 * time.Second,
 	}

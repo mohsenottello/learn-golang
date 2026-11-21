@@ -138,16 +138,36 @@ export default function Home() {
       <footer>
         <div className="container">
           <div className="row">
-            <div className="col-12 col-md-5">
-              <Link to="/" className="footer-brand"><i className="material-icons">spa</i>{site.name}</Link>
-              <p>{h.footer_text}</p>
+            <div className="col-lg-6 py-2 py-lg-0">
+
+              <ul className="list-unstyled small">
+                <li className="mb-2"><i className="material-icons">spa</i></li>
+                <li className="mb-2">
+                  <Link to="/" className="footer-brand">{site.name}</Link>
+                </li>
+                <li className="mb-2">
+                  <p>{h.footer_text}</p>
+                </li>
+              </ul>
             </div>
-            <div className="col-12 col-md-7">
+            <div className="col-lg-6 py-2 py-lg-0">
               <div className="footer-links">
+                <ul className="list-unstyled small">
+                <li className="mb-2">
                 <Link to="/">{t("nav_home")}</Link>
-                <Link to={resumeHref}>{t("nav_resume")}</Link>
-                {registration && <Link to={createHref}>{t("home_create")}</Link>}
-                <Link to="/contact">{t("nav_contact")}</Link>
+                </li>
+                <li className="mb-2">
+                  <Link to={resumeHref}>{t("nav_resume")}</Link>
+                </li>
+                {registration && (
+                  <li className="mb-2">
+                    <Link to={createHref}>{t("home_create")}</Link>
+                  </li>
+                )}
+                <li className="mb-2">
+                  <Link to="/contact">{t("nav_contact")}</Link>
+                </li>
+                </ul>
               </div>
             </div>
           </div>
